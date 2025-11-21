@@ -59,16 +59,43 @@ Ver [`examples/basic_usage.py`](examples/basic_usage.py) para casos de uso compl
 ## 🔬 Estructura del Proyecto
 
 ```
-extremal_packings/
-├── __init__.py          # API pública
-├── configurations.py    # Clase Configuration
-├── analysis.py          # Pipeline de análisis
-├── constraints.py       # Matriz de contacto y rolling space
-├── hessian.py          # Cálculo del Hessiano
-├── perimeter.py        # Perímetros y convex hull
-├── catalog.py          # Catálogo de configuraciones
-├── plotting.py         # Visualización
-└── interface.py        # Funciones de alto nivel
+disk-packing-analysis/
+├── extremal_packings/          # Código fuente principal
+│   ├── __init__.py            # API pública
+│   ├── analysis.py            # Pipeline de análisis
+│   ├── catalog.py             # Catálogo de configuraciones
+│   ├── configurations.py      # Clase Configuration
+│   ├── constraints.py         # Matriz A y rolling space
+│   ├── contact_graphs.py      # Validación de grafos
+│   ├── hessian.py            # Hessiano K y H
+│   ├── interface.py          # Funciones de alto nivel
+│   ├── json_loader.py        # Carga desde JSON
+│   ├── perimeter.py          # Perímetros y convex hull
+│   └── plotting.py           # Visualización
+├── data/                      # Configuraciones JSON
+│   ├── 3disks.json
+│   ├── 4disks.json
+│   ├── 5disks.json
+│   └── 6disks.json
+├── tests/                     # Suite de tests
+│   ├── test_analysis.py
+│   ├── test_catalog.py
+│   ├── test_configurations.py
+│   ├── test_constraints.py
+│   ├── test_contact_graphs.py
+│   ├── test_hessian.py
+│   └── test_perimeter.py
+├── examples/                  # Ejemplos de uso
+│   ├── basic_usage.py
+│   └── advanced_usage.py
+├── docs/                      # Documentación
+│   ├── index.md
+│   ├── api.md
+│   └── DETAILED_DOCUMENTATION.md
+├── pyproject.toml            # Configuración del proyecto
+├── setup.py                  # Setup alternativo
+├── README.md                 # Readme principal
+└── LICENSE                   # Licencia MIT
 ```
 
 ## 🧪 Testing
