@@ -37,7 +37,7 @@ El paquete proporciona:
 ### Instalación
 
 ```bash
-# Desde PyPI (cuando esté publicado)
+# Desde PyPI
 pip install extremal-packings
 
 # Desde el repositorio
@@ -471,9 +471,10 @@ def analyze_configuration(config: Configuration) -> AnalysisResult:
 2. Matriz de contacto $A(c)$
 3. Rolling space $R = \ker(A)$
 4. Perímetros (centros y discos)
-5. Hessiano global $K(c)$
-6. Hessiano intrínseco $H = R^T K R$
-7. Espectro de $H$
+5. Gradiente $\nabla{\text{Per}}(c)$ y proyección sobre $\text{Roll}(c)$
+6. Hessiano global $K(c)$
+7. Hessiano intrínseco $H = R^T K R$
+8. Espectro de $H$
 
 **Ejemplo completo**:
 
@@ -486,6 +487,7 @@ result = analyze_configuration(config)
 print(f"n = {config.n}, m = {len(config.edges)}")
 print(f"dim(Roll) = {result.rolling_dim}")
 print(f"Rígida: {result.is_rigid}")
+print(f"Crítica: {result.is_critical}")
 print(f"Autovalores: {result.eigenvalues}")
 print(f"Perímetro: {result.perimeter_disks:.4f}")
 ```
