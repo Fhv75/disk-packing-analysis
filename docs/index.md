@@ -509,7 +509,7 @@ Ejemplos:
 - `D3-1`: Triángulo equilátero
 - `D3-2`: Cadena de 3 discos
 - `D5-7`: Pentágono regular
-- `D6-45`: Configuración #45 de 6 discos
+- `D6-46`: Configuración colineal de 6 discos
 
 #### Funciones Principales
 
@@ -651,13 +651,15 @@ Configuración: D5-7
 ========================================
 Discos: 5
 Contactos: 5
-Dimensión rolling space: 3
-Rígida: True
+Dimensión rolling space: 5
+Rígida: False
 
 Autovalores del Hessiano intrínseco:
   λ[0] =  0.0000e+00
-  λ[1] =  6.1803e-01
-  λ[2] =  1.6180e+00
+  λ[1] =  0.0000e+00
+  λ[2] =  6.6910e-01
+  λ[3] =  1.0000e+00
+  λ[4] =  1.0000e+00
 
 Perímetros:
   Centros: 10.0000
@@ -689,8 +691,8 @@ def create_dashboard(configs: list[str]) -> None:
 
 | Config | n | m | dim(Roll) | Perímetro | λ_min | λ_max |
 |--------|---|---|-----------|-----------|-------|-------|
-| D5-1   | 5 | 4 | 4         | 14.5678   | -0.12 | 2.34  |
-| D5-7   | 5 | 5 | 3         | 16.2832   | 0.00  | 1.62  |
+| D5-1   | 5 | 4 | 5         | 14.5678   | 0 | 0.83  |
+| D5-7   | 5 | 5 | 3         | 16.2832   | 0.00  | 1  |
 
 ---
 
