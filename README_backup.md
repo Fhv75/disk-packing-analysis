@@ -7,7 +7,7 @@ Paquete Python para análisis geométrico y espectral de configuraciones de disc
 - **Catálogo de configuraciones predefinidas de 3 a 6 discos**
 - **Análisis variacional**: Matriz de contacto, rolling space, gradiente proyectado, Hessiano intrínseco
 - **Visualización**: Gráficos de discos, grafos de contacto, espectros
-- **API Python y CLI**: Funciones de alto nivel y herramienta de línea de comandos
+- **API**: Funciones de alto nivel para análisis rápido
 
 ## 📦 Instalación
 
@@ -25,8 +25,6 @@ pip install -e .
 
 ## 🚀 Uso Rápido
 
-### Desde Python
-
 ```python
 from extremal_packings import load_configuration, analyze_configuration
 
@@ -42,31 +40,9 @@ print(f"Eigenvalues: {result.eigenvalues}")
 print(f"Perimeter: {result.perimeter_disks:.4f}")
 ```
 
-### Desde CLI (Línea de Comandos)
-
-```bash
-# Listar configuraciones disponibles
-epack list
-
-# Analizar una configuración específica
-epack analyze D5-7
-
-# Comparar configuraciones de 5 discos
-epack compare -s 5
-
-# Ver información detallada
-epack info D5-7
-
-# Visualizar con gráficos
-epack plot D5-7
-```
-
-**Ver [Documentación del CLI](docs/cli.md) para guía completa.**
-
 ## 📖 Documentación
 
 - **[Docs](docs/index.md)** - Guía exhaustiva, incluyendo fundamentos matemáticos
-- **[CLI](docs/cli.md)** - Guía completa de la interfaz de línea de comandos
 - **[Ejemplos Básicos](examples/basic_usage.py)** - Casos de uso comunes
 - **[Ejemplos Avanzados](examples/advanced_usage.py)** - Análisis detallado paso a paso
 
@@ -87,7 +63,6 @@ extremal_packings/
 ├── __init__.py            # API pública
 ├── analysis.py            # Pipeline de análisis
 ├── catalog.py             # Catálogo de configuraciones
-├── cli.py                 # Interfaz de línea de comandos
 ├── configurations.py      # Clase Configuration
 ├── constraints.py         # Matriz A y rolling space
 ├── contact_graphs.py      # Validación de grafos

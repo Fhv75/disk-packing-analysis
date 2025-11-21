@@ -12,11 +12,10 @@
 2. [Fundamentos Matemáticos](#fundamentos-matemáticos)
 3. [Arquitectura del Paquete](#arquitectura-del-paquete)
 4. [Módulos Detallados](#módulos-detallados)
-5. [Interfaz de Línea de Comandos](#interfaz-de-línea-de-comandos)
-6. [Catálogo de Configuraciones](#catálogo-de-configuraciones)
-7. [Ejemplos Avanzados](#ejemplos-avanzados)
-8. [Guía de Desarrollo](#guía-de-desarrollo)
-9. [Referencias](#referencias)
+5. [Catálogo de Configuraciones](#catálogo-de-configuraciones)
+6. [Ejemplos Avanzados](#ejemplos-avanzados)
+7. [Guía de Desarrollo](#guía-de-desarrollo)
+8. [Referencias](#referencias)
 
 ---
 
@@ -71,7 +70,7 @@ pip install -e .
 
 ### 2. Matriz de Contacto $A(c)$
 
-Para cada contacto $(i,j) \in E$, definimos el vector unitario:
+Para cada contacto $(i,j) \in E, definimos el vector unitario:
 
 $$u_{ij} = \frac{c_j - c_i}{\|c_j - c_i\|} = \frac{c_j - c_i}{2}$$
 
@@ -168,7 +167,6 @@ disk-packing-analysis/
 │   ├── __init__.py            # API pública
 │   ├── analysis.py            # Pipeline de análisis
 │   ├── catalog.py             # Catálogo de configuraciones
-│   ├── cli.py                 # Interfaz de línea de comandos
 │   ├── configurations.py      # Clase Configuration
 │   ├── constraints.py         # Matriz A y rolling space
 │   ├── contact_graphs.py      # Validación de grafos
@@ -185,7 +183,6 @@ disk-packing-analysis/
 ├── tests/                     # Suite de tests
 │   ├── test_analysis.py
 │   ├── test_catalog.py
-│   ├── test_cli.py
 │   ├── test_configurations.py
 │   ├── test_constraints.py
 │   ├── test_contact_graphs.py
@@ -196,7 +193,6 @@ disk-packing-analysis/
 │   └── advanced_usage.py
 ├── docs/                      # Documentación
 │   ├── index.md
-│   ├── cli.md
 │   ├── api.md
 │   └── DETAILED_DOCUMENTATION.md
 ├── pyproject.toml            # Configuración del proyecto
@@ -700,50 +696,6 @@ def create_dashboard(configs: list[str]) -> None:
 
 ---
 
-### 11. `cli.py`
-
-Interfaz de línea de comandos para acceso rápido a todas las funcionalidades.
-
-**Documentación completa**: Ver [docs/cli.md](cli.md)
-
-#### Comando Principal: `epack`
-
-El CLI proporciona 6 comandos principales:
-
-```bash
-epack list          # Listar configuraciones
-epack info D5-7     # Información detallada
-epack analyze D5-7  # Análisis variacional completo
-epack compare -s 5  # Comparar configuraciones
-epack plot D5-7     # Visualización interactiva
-epack stats         # Estadísticas del catálogo
-```
-
-#### Ejemplo de Uso Básico
-
-```bash
-# Explorar catálogo
-epack list -s 5
-
-# Analizar con gráficos
-epack analyze D5-7 --plot
-
-# Comparar y exportar
-epack compare -s 5 -o results.csv
-```
-
-#### Características Principales
-
-- **Análisis rápido**: Sin escribir código Python
-- **Exportación flexible**: JSON, CSV
-- **Visualización integrada**: Gráficos interactivos
-- **Comparación batch**: Analizar múltiples configuraciones
-- **Progreso visual**: Barras de progreso para operaciones largas
-
-**Para guía completa y ejemplos avanzados**: [Documentación del CLI](cli.md)
-
----
-
 ## Catálogo de Configuraciones
 
 ### Estadísticas del Catálogo
@@ -918,7 +870,7 @@ print_analysis_summary(result)
 
 ### Recursos Online
 
-- **OEIS A085632**: Número de penny graphs con n vértices
+- **OEIS A000055**: Número de grafos conexos con n vértices
 - **ConvexHull Documentation**: [SciPy Spatial](https://docs.scipy.org/doc/scipy/reference/generated/scipy.spatial.ConvexHull.html)
 
 ---
@@ -940,8 +892,7 @@ print_analysis_summary(result)
 | $K(c)$ | Hessiano global ($2n \times 2n$) |
 | $H$ | Hessiano intrínseco ($d \times d$) |
 | $\lambda_i$ | Autovalor $i$ de $H$ |
-| $\text{Per}(c)$ | Perímetro de la envolvente de centros |
-| $\mathcal{P}(c)$ | Perímetro del cluster |
+| $P(c)$ | Perímetro del cluster |
 
 ### B. Glosario de Términos
 
