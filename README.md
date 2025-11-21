@@ -81,15 +81,7 @@ pytest tests/
 
 MIT License - Ver [LICENSE](LICENSE) para detalles.
 
-## 👤 Autor
+## 👤 Autores
 
-**Fabián Andrés Henry Vilaxa**
-**Jose Ayala Hoffman**
-
-## 📈 Roadmap
-
-- [ ] Publicar en PyPI
-- [ ] Añadir más configuraciones al catálogo
-- [ ] Implementar visualización interactiva
-- [ ] Soporte para análisis batch
-- [ ] Documentación completa con Sphinx
+- **Fabián Andrés Henry Vilaxa**
+- **Jose Ayala Hoffman**
