@@ -28,16 +28,16 @@ def cli():
     Herramienta de línea de comandos para analizar configuraciones de discos
     tangentes, calcular rolling spaces, Hessianos intrínsecos y perímetros.
     
+    \b
     Ejemplos:
-    
-        epack list              # Listar todas las configuraciones
-        epack list -s 5         # Solo configuraciones de 5 discos
-        epack analyze D5-7      # Analizar configuración específica
-        epack analyze D5-7 -p   # Analizar y mostrar gráficos
-        epack compare -s 5      # Comparar todas las de 5 discos
-        epack info D5-7         # Información detallada
-        epack plot D5-7         # Visualizar configuración
-        epack stats             # Estadísticas del catálogo
+      epack list              # Listar todas las configuraciones
+      epack list -s 5         # Solo configuraciones de 5 discos
+      epack analyze D5-7      # Analizar configuración específica
+      epack analyze D5-7 -p   # Analizar y mostrar gráficos
+      epack compare -s 5      # Comparar todas las de 5 discos
+      epack info D5-7         # Información detallada
+      epack plot D5-7         # Visualizar configuración
+      epack stats             # Estadísticas del catálogo
     
     Para más ayuda: epack COMMAND --help
     """
