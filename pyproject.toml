@@ -10,7 +10,8 @@ readme = "README.md"
 requires-python = ">=3.8"
 license = {text = "MIT"}
 authors = [
-    {name = "Fabián Andrés Henry Vilaxa", email = "fabian.henry.vilaxa@alumnos.uta.cl"}
+    {name = "Fabián Andrés Henry Vilaxa", email = "fabian.henry.vilaxa@alumnos.uta.cl"},
+    {name = "Jose Ayala Hoffman", email = "jayalhoff@gmail.com"}
 ]
 keywords = ["disk packing", "geometry", "spectral analysis", "rigidity", "convex hull"]
 classifiers = [
@@ -26,6 +27,7 @@ dependencies = [
     "scipy>=1.7.0",
     "matplotlib>=3.3.0",
     "networkx>=2.5",
+    "click>=8.0.0",
 ]
 
 [project.optional-dependencies]
@@ -36,16 +38,16 @@ dev = [
     "flake8>=4.0",
     "mypy>=0.950",
 ]
-docs = [
-    "sphinx>=4.0",
-    "sphinx-rtd-theme>=1.0",
-]
 
 [project.urls]
 Homepage = "https://github.com/Fhv75/disk-packing-analysis"
-Documentation = "https://github.com/Fhv75/disk-packing-analysis/docs"
+Documentation = "https://github.com/Fhv75/disk-packing-analysis/blob/main/docs/index.md"
 Repository = "https://github.com/Fhv75/disk-packing-analysis"
 "Bug Tracker" = "https://github.com/Fhv75/disk-packing-analysis/issues"
+
+[project.scripts]
+epack = "extremal_packings.cli:cli"
+extremal-packings = "extremal_packings.cli:cli"
 
 [tool.setuptools]
 packages = ["extremal_packings"]

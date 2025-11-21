@@ -6,7 +6,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 setup(
     name="extremal-packings",
     version="1.0.0",
-    author="Fabián Andrés Henry Vilaxa",
+    author="Fabián Andrés Henry Vilaxa, Jose Ayala Hoffman",
     author_email="fabian.henry.vilaxa@alumnos.uta.cl",
     description="Análisis geométrico y espectral de configuraciones de discos unitarios tangentes",
     long_description=long_description,
@@ -31,6 +31,7 @@ setup(
         "scipy>=1.7.0",
         "matplotlib>=3.3.0",
         "networkx>=2.5",
+        "click>=8.0.0",
     ],
     extras_require={
         "dev": [
@@ -40,9 +41,11 @@ setup(
             "flake8>=4.0",
             "mypy>=0.950",
         ],
-        "docs": [
-            "sphinx>=4.0",
-            "sphinx-rtd-theme>=1.0",
+    },
+    entry_points={
+        'console_scripts': [
+            'epack=extremal_packings.cli:cli',
+            'extremal-packings=extremal_packings.cli:cli',
         ],
     },
     package_data={
