@@ -51,6 +51,8 @@ from .contact_graphs import check_graph_validity
 from .constraints import (
     build_contact_matrix,
     rolling_space_basis,
+    compute_perimeter_gradient,
+    project_gradient_to_kernel
 )
 from .perimeter import (
     perimeter_centers,
@@ -99,6 +101,10 @@ class AnalysisResult:
     A: np.ndarray
     R: np.ndarray
 
+    # Proyección al rolling space
+    grad_p: np.ndarray
+    proj_grad_p: np.ndarray
+
     # Hessianos
     K: np.ndarray      # Hessiano global no restringido
     H: np.ndarray      # Hessiano proyectado al rolling space
@@ -119,7 +125,19 @@ class AnalysisResult:
             Número de grados de libertad infinitesimales = 2n - rank(A).
         """
         return self.R.shape[1]
-    
+    @property
+    def is_critical(self) -> bool:
+        """
+        Verifica si la configuración es crítica a primer orden.
+        
+        Returns:
+            True si el gradiente proyectado sobre Roll(c) es cero.
+        
+        Notes:
+            Una configuración es crítica si no hay deformaciones
+            infinitesimales que reduzcan el perímetro.
+        """
+        return np.allclose(self.proj_grad_p, 0.0)
     @property
     def is_rigid(self) -> bool:
         """
@@ -237,17 +255,23 @@ def analyze_configuration(config: Configuration) -> AnalysisResult:
     p_disks = perimeter_disks(config)
 
     # -------------------------------
-    # 5. Hessiano global
+    # 5. Criticidad a Primer Orden
+    # -------------------------------
+    grad_p = compute_perimeter_gradient(config)
+    grad_p_proj = project_gradient_to_kernel(grad_p, R)
+
+    # -------------------------------
+    # 6. Hessiano global
     # -------------------------------
     K = build_unconstrained_hessian(config)
 
     # -------------------------------
-    # 6. Hessiano proyectado
+    # 7. Hessiano proyectado
     # -------------------------------
     H = project_to_roll(K, R)
 
     # -------------------------------
-    # 7. Autovalores
+    # 8. Autovalores
     # -------------------------------
     eigenvalues = intrinsic_spectrum(H)
 
@@ -260,6 +284,8 @@ def analyze_configuration(config: Configuration) -> AnalysisResult:
         R=R,
         K=K,
         H=H,
+        grad_p=grad_p,
+        proj_grad_p=grad_p_proj,
         eigenvalues=eigenvalues,
         perimeter_centers=p_centers,
         perimeter_disks=p_disks,
