@@ -58,4 +58,8 @@ def intrinsic_spectrum(H: np.ndarray) -> np.ndarray:
     """
     Autovalores (ordenados) del Hessiano intrínseco H.
     """
-    return np.linalg.eigvalsh(H)
+    # Aproximar autovalores pequeños a cero
+    eigenvalues = np.linalg.eigvalsh(H)
+    eigenvalues[np.abs(eigenvalues) < 1e-12] = 0
+    return eigenvalues
+    
