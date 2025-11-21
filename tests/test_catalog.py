@@ -35,7 +35,7 @@ class TestLoadConfiguration(unittest.TestCase):
 
     def test_load_valid_config(self):
         """Test cargar configuración válida."""
-        config = load_configuration("D3-1")
+        config = load_configuration("D3-2")
         
         self.assertEqual(config.n, 3)
         self.assertIsNotNone(config.coords)
@@ -43,7 +43,7 @@ class TestLoadConfiguration(unittest.TestCase):
 
     def test_config_properties(self):
         """Test propiedades de configuración cargada."""
-        config = load_configuration("D3-2")  # Triángulo
+        config = load_configuration("D3-1")  # Triángulo
         
         self.assertEqual(config.n, 3)
         self.assertEqual(len(config.edges), 3)
