@@ -820,6 +820,8 @@ for name in configs:
 ### Ejemplo 2: Pipeline Personalizado
 
 ```python
+import numpy as np
+from extremal_packings.configurations import Configuration
 from extremal_packings.constraints import build_contact_matrix, rolling_space_basis
 from extremal_packings.hessian import build_unconstrained_hessian, project_to_roll
 
