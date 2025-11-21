@@ -5,7 +5,7 @@ from .configurations import Configuration
 
 
 def _cross(o: np.ndarray, a: np.ndarray, b: np.ndarray) -> float:
-    """Producto cruzado 2D (o->a) x (o->b)."""
+    """Producto cruz 2D (o->a) x (o->b)."""
     return (a[0] - o[0]) * (b[1] - o[1]) - (a[1] - o[1]) * (b[0] - o[0])
 
 
