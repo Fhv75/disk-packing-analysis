@@ -1,6 +1,6 @@
 # Extremal Packings - Análisis de Empaquetamientos de Discos Congruentes
 
-**Versión:** 1.0.0  
+**Versión:** 1.0.0 
 **Autor:** Fabián Andrés Henry Vilaxa, Jose Ayala Hoffman  
 **Licencia:** MIT
 
@@ -914,4 +914,4 @@ print_analysis_summary(result)
 
 ---
 
-**Fin del documento** | Versión 1.0.1 | Última actualización: 2025
+**Fin del documento** | Versión 1.0.0 | Última actualización: 2025

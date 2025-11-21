@@ -5,13 +5,13 @@ Paquete Python para análisis geométrico y espectral de configuraciones de disc
 ## 🎯 Características
 
 - **Catálogo de configuraciones predefinidas de 3 a 6 discos**
-- **Análisis variacional**: Matriz de contacto, rolling space, proyección del gradiente, Hessiano intrínseco
+- **Análisis variacional**: Matriz de contacto, rolling space, gradiente proyectado, Hessiano intrínseco
 - **Visualización**: Gráficos de discos, grafos de contacto, espectros
-- **API intuitiva**: Funciones de alto nivel para análisis rápido
+- **API**: Funciones de alto nivel para análisis rápido
 
 ## 📦 Instalación
 
-### Desde PyPI (cuando esté publicado)
+### Desde PyPI (AUN NO FUNCIONA)
 ```bash
 pip install extremal-packings
 ```
@@ -40,25 +40,9 @@ print(f"Eigenvalues: {result.eigenvalues}")
 print(f"Perimeter: {result.perimeter_disks:.4f}")
 ```
 
-## 📖 Conceptos Clave
-
-### Configuración
-n discos unitarios con centros 
-$c_1, ..., c_n \in \mathbb{R}^2$ y grafo de contacto $G$ donde dos discos se tocan si $||c_j - c_i|| = 2$
-
-### Matriz de Contacto $A(c)$
-Matriz $m×2n$ que codifica restricciones de contacto. Cada fila representa un contacto $(i,j)$.
-
-### Rolling Space
-$\text{Roll}(c) = \ker(A(c)) ⊆ ℝ²ⁿ$, Espacio de deformaciones infinitesimales que preservan contactos.
-
-### Hessiano Intrínseco
-$H = R^T K(c) R$, Proyección del Hessiano del perímetro al rolling space. Sus autovalores indican estabilidad.
-
 ## 📖 Documentación
 
-- **[API Reference](docs/api.md)** - Referencia completa de la API
-- **[Documentación Detallada](docs/DETAILED_DOCUMENTATION.md)** - Guía exhaustiva con fundamentos matemáticos
+- **[Docs](docs/index.md)** - Guía exhaustiva, incluyendo fundamentos matemáticos
 - **[Ejemplos Básicos](examples/basic_usage.py)** - Casos de uso comunes
 - **[Ejemplos Avanzados](examples/advanced_usage.py)** - Análisis detallado paso a paso
 
