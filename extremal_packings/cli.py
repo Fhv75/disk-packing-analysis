@@ -168,21 +168,16 @@ def analyze(name: str, output: Optional[str], plot: bool, verbose: bool):
     if plot:
         click.echo("📊 Generando gráficos...\n")
         
-        fig, axes = plt.subplots(1, 3, figsize=(15, 4))
+        fig, axes = plt.subplots(1, 3, figsize=(16, 5))
         
-        # Plot 1: Discos
-        plt.sca(axes[0])
-        plot_disks(config, show_hull=True)
-        axes[0].set_title(f"{config.name}: Configuración")
+        # Plot 1: Discos - PASAR ax explícitamente
+        plot_disks(config, ax=axes[0], show_hull=True)
         
-        # Plot 2: Grafo de contacto
-        plt.sca(axes[1])
-        plot_contact_graph(config, show_normals=False)
-        axes[1].set_title("Grafo de Contacto")
+        # Plot 2: Grafo de contacto - PASAR ax explícitamente
+        plot_contact_graph(config, ax=axes[1], show_normals=False)
         
-        # Plot 3: Espectro
-        plt.sca(axes[2])
-        plot_spectrum(result.eigenvalues, f"Espectro")
+        # Plot 3: Espectro - PASAR ax explícitamente
+        plot_spectrum(result.eigenvalues, ax=axes[2], config_name=config.name)
         
         plt.tight_layout()
         plt.show()
@@ -358,21 +353,18 @@ def plot(name: str, hull: bool, normals: bool):
         click.echo(f"❌ Error: {e}", err=True)
         sys.exit(1)
     
-    click.echo(f"📊 Visualizando {name}...\n")
+        click.echo(f"📊 Visualizando {name}...\n")
     
-    fig, axes = plt.subplots(1, 2, figsize=(12, 5))
+    fig, axes = plt.subplots(1, 2, figsize=(14, 6))
     
-    plt.sca(axes[0])
-    plot_disks(config, show_hull=hull)
-    axes[0].set_title(f"{name}: Discos")
+    # PASAR ax explícitamente
+    plot_disks(config, ax=axes[0], show_hull=hull)
     
-    plt.sca(axes[1])
-    plot_contact_graph(config, show_normals=normals)
-    axes[1].set_title("Grafo de Contacto")
+    # PASAR ax explícitamente
+    plot_contact_graph(config, ax=axes[1], show_normals=normals)
     
     plt.tight_layout()
     plt.show()
-
 
 @cli.command()
 def stats():
