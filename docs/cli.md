@@ -13,9 +13,9 @@
 3. [Comandos Disponibles](#comandos-disponibles)
 4. [Guía de Uso](#guía-de-uso)
 5. [Ejemplos Prácticos](#ejemplos-prácticos)
-6. [Opciones Avanzadas](#opciones-avanzadas)
 7. [Flujos de Trabajo Típicos](#flujos-de-trabajo-típicos)
-8. [Solución de Problemas](#solución-de-problemas)
+7. [Cheatsheet de Comandos](#cheatsheet-de-comandos)
+
 
 ---
 
@@ -577,9 +577,7 @@ python -c "import numpy as np; print(np.mean(np.loadtxt('rigid_perimeters.txt'))
 ```
 ---
 
-## Referencia Rápida
-
-### Cheatsheet de Comandos
+## Cheatsheet de Comandos
 
 ```bash
 # Exploración
