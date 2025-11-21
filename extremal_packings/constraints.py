@@ -115,6 +115,9 @@ def project_gradient_to_kernel(gradient: np.ndarray, R: np.ndarray) -> np.ndarra
     # Como R es ortonormal (de SVD), R^T R = I, entonces P = R R^T
     projection = R @ (R.T @ gradient)
     
+    # Aproximar valores pequeños a cero
+    projection[np.abs(projection) < 1e-12] = 0.0
+    
     return projection
 
 
