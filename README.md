@@ -2,14 +2,14 @@
 
 Paquete Python para análisis geométrico y espectral de configuraciones de discos unitarios tangentes en el plano.
 
-## 🎯 Características
+## Características
 
 - **Catálogo de configuraciones predefinidas de 3 a 6 discos**
 - **Análisis variacional**: Matriz de contacto, rolling space, gradiente proyectado, Hessiano intrínseco
 - **Visualización**: Gráficos de discos, grafos de contacto, espectros
 - **API Python y CLI**: Funciones de alto nivel y herramienta de línea de comandos
 
-## 📦 Instalación
+## Instalación
 
 ### Desde PyPI (AUN NO FUNCIONA)
 ```bash
@@ -23,7 +23,7 @@ cd disk-packing-analysis
 pip install -e .
 ```
 
-## 🚀 Uso Rápido
+## Uso Rápido
 
 ### Desde Python
 
@@ -60,27 +60,16 @@ epack info D5-7
 # Visualizar con gráficos
 epack plot D5-7
 ```
+## Docs
 
-**Ver [Documentación del CLI](docs/cli.md) para guía completa.**
-
-## 📖 Documentación
-
-- **[Docs](docs/index.md)** - Guía exhaustiva, incluyendo fundamentos matemáticos
-- **[CLI](docs/cli.md)** - Guía completa de la interfaz de línea de comandos
-- **[Ejemplos Básicos](examples/basic_usage.py)** - Casos de uso comunes
-- **[Ejemplos Avanzados](examples/advanced_usage.py)** - Análisis detallado paso a paso
-
-## 📊 Ejemplos
+- **[Docs](docs/index.md)** - Guía completa de uso. Incluye fundamentos matemáticos.
+- **[CLI](docs/cli.md)** - Guía de la interfaz de línea de comandos.
+- **[Ejemplos Básicos](examples/basic_usage.py)**
+- **[Ejemplos Avanzados](examples/advanced_usage.py)**
 
 Ver [`examples/basic_usage.py`](examples/basic_usage.py) para casos de uso completos:
 
-1. Cargar del catálogo
-2. Crear configuraciones personalizadas
-3. Análisis completo
-4. Visualización
-5. Análisis comparativo
-
-## 🔬 Estructura del Proyecto
+## Estructura del Proyecto
 
 ```
 extremal_packings/        
@@ -98,17 +87,17 @@ extremal_packings/
 └── plotting.py            # Visualización
 ```
 
-## 🧪 Testing
+## Testing
 
 ```bash
 pytest tests/
 ```
 
-## 📝 Licencia
+## Licencia
 
-MIT License - Ver [LICENSE](LICENSE) para detalles.
+MIT License. [LICENSE](LICENSE).
 
-## 👤 Autores
+## Autores
 
 - **Fabián Andrés Henry Vilaxa**
 - **Jose Ayala Hoffman**

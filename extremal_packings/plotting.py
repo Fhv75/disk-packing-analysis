@@ -13,18 +13,17 @@ from .configurations import Configuration
 from .perimeter import compute_hull
 
 
-# Paleta de colores consistente
 COLORS = {
-    'disk_edge': '#2E3A59',      # Azul oscuro para bordes de discos
-    'disk_fill': '#E8EAF6',      # Azul muy claro para relleno
-    'center': '#1A1A1A',         # Negro para centros
-    'contact_tangent': '#9C27B0', # Púrpura para tangentes
-    'hull': '#2E3A59',           # Azul oscuro para envolvente
-    'label': '#1A1A1A',          # Negro para etiquetas
-    'spectrum_bar': '#64B5F6',   # Azul para barras de espectro
+    'disk_edge': '#2E3A59',      
+    'disk_fill': '#E8EAF6',      
+    'center': '#1A1A1A',         
+    'contact_tangent': '#9C27B0', 
+    'hull': '#2E3A59',           
+    'label': '#1A1A1A',          
+    'spectrum_bar': '#64B5F6', 
 }
 
-# Colores pastel para las aristas (cada arista tendrá un color diferente)
+# Colores pastel para las aristas
 EDGE_COLORS = [
     '#77B6EA',  # Azul medio
     '#FFB577',  # Naranja melocotón
@@ -217,8 +216,8 @@ def _create_arc_points(center, radius, angle_start, angle_end, num_points=100):
     if angle_diff < 0:
         angle_diff += 2 * np.pi
     
-    # CLAVE: Si el arco es > 180°, invertir para tomar el arco complementario
-    # (el más corto, que es el EXTERIOR del cluster)
+    # Si el arco es > 180°, invertir para tomar el arco complementario
+    # (el más corto, que es parte del exterior del cluster)
     if angle_diff > np.pi:
         # Invertir: ir desde angle_end hasta angle_start + 2π
         final_start_rad = angle_end_rad
