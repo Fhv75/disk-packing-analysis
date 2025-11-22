@@ -4,10 +4,10 @@ Paquete Python para análisis geométrico y espectral de configuraciones de disc
 
 ## Características
 
-- **Catálogo de configuraciones predefinidas de 3 a 6 discos**
-- **Análisis variacional**: Matriz de contacto, rolling space, gradiente proyectado, Hessiano intrínseco
-- **Visualización**: Gráficos de discos, grafos de contacto, espectros
-- **API Python y CLI**: Funciones de alto nivel y herramienta de línea de comandos
+- Catálogo de configuraciones predefinidas de 3 a 6 discos
+- Calculo de Matriz de contacto, rolling space, gradiente proyectado, Hessiano intrínseco
+- Visualización en plots
+- API y utilidad CLI
 
 ## Instalación
 
