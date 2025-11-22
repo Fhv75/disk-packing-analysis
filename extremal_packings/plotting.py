@@ -51,7 +51,7 @@ def plot_disks(config: Configuration, ax=None, radius: float = 1.0,
         radius: Radio de los discos (default: 1.0)
         show_labels: Si se muestran las etiquetas de los discos
         show_centers: Si se muestran los centros marcados
-        show_hull: Si se muestra la envolvente convexa
+        show_hull: Si se muestra la envolvente convexa DE LOS DISCOS
         show_contacts: Si se muestran las aristas de contacto
         show_tangents: Si se muestran las tangentes de contacto
     """
@@ -69,7 +69,7 @@ def plot_disks(config: Configuration, ax=None, radius: float = 1.0,
         fig.patch.set_facecolor('white')
     ax.set_facecolor('white')
     
-    # Dibujar discos
+    # Dibujar discos PRIMERO
     for i, (xi, yi) in enumerate(coords):
         circle = Circle((xi, yi), radius, 
                        fill=True, 
@@ -80,7 +80,7 @@ def plot_disks(config: Configuration, ax=None, radius: float = 1.0,
                        zorder=2)
         ax.add_patch(circle)
     
-    # Dibujar aristas de contacto (cada una con color diferente)
+    # Dibujar aristas de contacto
     if show_contacts:
         for idx, (i, j) in enumerate(config.edges):
             edge_color = EDGE_COLORS[idx % len(EDGE_COLORS)]
@@ -96,14 +96,9 @@ def plot_disks(config: Configuration, ax=None, radius: float = 1.0,
             diff = cj - ci
             dist = np.linalg.norm(diff)
             if dist > 1e-10:
-                # Punto de contacto (en el medio entre los dos discos)
                 contact_point = ci + (diff / dist) * radius
-                
-                # Vector tangente (perpendicular al vector de contacto)
                 tangent = np.array([-diff[1], diff[0]]) / dist
-                
-                # Dibujar línea tangente
-                t_len = 0.5  # Longitud de la línea tangente
+                t_len = 0.5
                 p1 = contact_point - tangent * t_len
                 p2 = contact_point + tangent * t_len
                 ax.plot([p1[0], p2[0]], [p1[1], p2[1]], 
@@ -119,9 +114,19 @@ def plot_disks(config: Configuration, ax=None, radius: float = 1.0,
     # Dibujar etiquetas FUERA de los centros
     if show_labels:
         for i, (xi, yi) in enumerate(coords):
-            # Offset para poner las etiquetas fuera del centro
-            offset = 0.15
-            ax.text(xi, yi + offset, str(i), ha="center", va="bottom", 
+            centroid = coords.mean(axis=0)
+            direction = np.array([xi, yi]) - centroid
+            direction_norm = np.linalg.norm(direction)
+            
+            if direction_norm > 1e-10:
+                offset_dir = direction / direction_norm * 0.2
+                text_x = xi + offset_dir[0]
+                text_y = yi + offset_dir[1]
+            else:
+                text_x = xi
+                text_y = yi + 0.2
+            
+            ax.text(text_x, text_y, str(i), ha="center", va="center", 
                    fontsize=11, fontweight='bold', 
                    color=COLORS['label'], zorder=6,
                    bbox=dict(boxstyle='round,pad=0.3', 
@@ -129,16 +134,45 @@ def plot_disks(config: Configuration, ax=None, radius: float = 1.0,
                            edgecolor='none',
                            alpha=0.8))
     
-    # Dibujar envolvente convexa
+    # Dibujar envolvente convexa DE LOS DISCOS (no solo centros)
     if show_hull:
-        hull = compute_hull(config)
-        if len(hull) >= 3:
-            # Dibujar el polígono completo
-            hull_coords = coords[hull]
-            hull_coords = np.vstack([hull_coords, hull_coords[0]])  # Cerrar el polígono
-            ax.plot(hull_coords[:, 0], hull_coords[:, 1], 
-                   color=COLORS['hull'], linewidth=3, 
-                   linestyle='-', zorder=1, alpha=0.9)
+        from .perimeter import compute_disk_hull_geometry
+        
+        try:
+            # Obtener la geometría completa del hull de discos
+            hull_geom = compute_disk_hull_geometry(config, radius)
+            
+            if hull_geom:
+                # Dibujar segmentos tangentes
+                if 'tangent_segments' in hull_geom:
+                    for segment in hull_geom['tangent_segments']:
+                        start = segment['start']
+                        end = segment['end']
+                        ax.plot([start[0], end[0]], [start[1], end[1]], 
+                               color=COLORS['hull'], linewidth=4, 
+                               linestyle='-', zorder=10, alpha=1.0)
+                
+                # Dibujar arcos circulares
+                if 'arcs' in hull_geom:
+                    for arc in hull_geom['arcs']:
+                        arc_x, arc_y = _create_arc_points(
+                            arc['center'], 
+                            arc['radius'], 
+                            arc['angle_start'], 
+                            arc['angle_end']
+                        )
+                        ax.plot(arc_x, arc_y, 
+                               color=COLORS['hull'], linewidth=4, 
+                               linestyle='-', zorder=10, alpha=1.0)
+                
+                print("DEBUG: Hull de discos dibujado exitosamente")
+            else:
+                print("DEBUG: hull_geom es None")
+                
+        except Exception as e:
+            print(f"ERROR al dibujar hull de discos: {e}")
+            import traceback
+            traceback.print_exc()
     
     ax.set_aspect("equal", adjustable="box")
     ax.set_xlabel("x", fontsize=12)
@@ -148,13 +182,62 @@ def plot_disks(config: Configuration, ax=None, radius: float = 1.0,
     ax.spines['top'].set_visible(False)
     ax.spines['right'].set_visible(False)
     
-    # NO añadir leyenda
-    
-    # Solo mostrar si es standalone
     if standalone:
         plt.tight_layout()
         plt.show()
 
+
+def _create_arc_points(center, radius, angle_start, angle_end, num_points=100):
+    """
+    Crea puntos para dibujar un arco circular EXTERIOR del hull.
+    Siempre toma el arco < 180° (el más corto).
+    
+    Args:
+        center: Centro del círculo [x, y] o (x, y)
+        radius: Radio del círculo
+        angle_start: Ángulo inicial en grados
+        angle_end: Ángulo final en grados
+        num_points: Número de puntos del arco
+    
+    Returns:
+        (x_points, y_points): Arrays de coordenadas del arco
+    """
+    # Convertir a array si es necesario
+    if isinstance(center, (list, tuple)):
+        center = np.array(center)
+    
+    # Convertir ángulos a radianes
+    angle_start_rad = np.radians(angle_start)
+    angle_end_rad = np.radians(angle_end)
+    
+    # Calcular diferencia de ángulo
+    angle_diff = angle_end_rad - angle_start_rad
+    
+    # Si es negativo, agregar 2π para ir en sentido positivo
+    if angle_diff < 0:
+        angle_diff += 2 * np.pi
+    
+    # CLAVE: Si el arco es > 180°, invertir para tomar el arco complementario
+    # (el más corto, que es el EXTERIOR del cluster)
+    if angle_diff > np.pi:
+        # Invertir: ir desde angle_end hasta angle_start + 2π
+        final_start_rad = angle_end_rad
+        final_end_rad = angle_start_rad + 2 * np.pi
+        final_diff = 2 * np.pi - angle_diff
+    else:
+        # El arco es < 180°, usarlo directamente
+        final_start_rad = angle_start_rad
+        final_end_rad = angle_end_rad
+        final_diff = angle_diff
+    
+    # Generar ángulos uniformemente espaciados
+    angles = np.linspace(final_start_rad, final_start_rad + final_diff, num_points)
+    
+    # Calcular puntos del arco
+    x = center[0] + radius * np.cos(angles)
+    y = center[1] + radius * np.sin(angles)
+    
+    return x, y
 
 def plot_contact_graph(config: Configuration, ax=None, show_normals: bool = False) -> None:
     """
