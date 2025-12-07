@@ -116,7 +116,7 @@ from .catalog import (
 from .perimeter import perimeter_centers, perimeter_disks, compute_hull
 from .constraints import build_contact_matrix, rolling_space_basis
 from .hessian import (
-    build_unconstrained_hessian,
+    compute_intrinsic_hessian,
     project_to_roll,
     intrinsic_spectrum,
 )
@@ -151,7 +151,7 @@ __all__ = [
     # Álgebra lineal
     "build_contact_matrix",
     "rolling_space_basis",
-    "build_unconstrained_hessian",
+    "compute_intrinsic_hessian",
     "project_to_roll",
     "intrinsic_spectrum",
     

@@ -37,7 +37,7 @@ def eval_expr(expr: Union[str, float, int]) -> float:
         3.414213562373095
     """
     if isinstance(expr, (int, float)):
-        return float(expr)
+        return np.float64(expr)
     
     expr = str(expr).strip()
     
@@ -48,10 +48,10 @@ def eval_expr(expr: Union[str, float, int]) -> float:
     
     # Funciones auxiliares para grados
     def _cosd(degrees):
-        return np.cos(np.radians(degrees))
+        return np.cos(np.radians(np.float64(degrees)))
     
     def _sind(degrees):
-        return np.sin(np.radians(degrees))
+        return np.sin(np.radians(np.float64(degrees)))
     
     # Evaluar en un namespace seguro
     namespace = {
@@ -62,7 +62,7 @@ def eval_expr(expr: Union[str, float, int]) -> float:
     
     try:
         result = eval(expr, {"__builtins__": {}}, namespace)
-        return float(result)
+        return np.float64(result)
     except Exception as e:
         raise ValueError(f"No se pudo evaluar la expresión '{expr}': {e}")
 
@@ -88,7 +88,7 @@ def load_json_file(filepath: Path) -> List[Configuration]:
         
         # Procesar coordenadas (pueden tener expresiones matemáticas)
         coords_raw = graph['centros']
-        coords = np.zeros((n_disks, 2), dtype=float)
+        coords = np.zeros((n_disks, 2), dtype=np.float64)  # Usar float64 explícitamente
         
         for i, (x, y) in enumerate(coords_raw):
             coords[i, 0] = eval_expr(x)

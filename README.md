@@ -11,7 +11,7 @@ Paquete Python para análisis geométrico y espectral de configuraciones de disc
 
 ## Instalación
 
-### Desde PyPI (AUN NO FUNCIONA)
+### Desde PyPI
 ```bash
 pip install extremal-packings
 ```
