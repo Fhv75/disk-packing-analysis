@@ -226,28 +226,24 @@ def perimeter_centers(config: Configuration) -> float:
     """
     Perímetro de la envolvente convexa de los centros.
     
-    Para cadenas colineales: Per = 2 * dist(inicio, fin)
-    Para hulls generales: Per = suma de distancias entre vértices consecutivos
+    Usa la definición explícita en config.perimeter_edges.
     """
     coords = config.coords
-    hull = config.hull_vertices if config.hull_vertices is not None else compute_hull(config)
     
-    if len(hull) <= 1:
+    if config.perimeter_edges is None:
+        raise ValueError(
+            f"Configuration {config.name} no tiene perimeter_edges definido."
+        )
+    
+    if len(config.perimeter_edges) == 0:
         return np.float64(0.0)
     
-    # Detectar si es una cadena colineal
-    if is_collinear_chain(config, hull):
-        # Caso especial: cadena colineal
-        # Per = 2 * distancia entre extremos
-        i, j = find_chain_endpoints(config, hull)
-        return np.float64(2.0) * float(np.linalg.norm(coords[j] - coords[i]))
-    
-    # Caso general: polígono convexo
+    # Calcular perímetro desde definición explícita
     per = np.float64(0.0)
-    for k in range(len(hull)):
-        i = hull[k]
-        j = hull[(k + 1) % len(hull)]
-        per += float(np.linalg.norm(coords[j] - coords[i]))
+    for (i, j, weight) in config.perimeter_edges:
+        dist = np.linalg.norm(coords[j] - coords[i])
+        per += np.float64(weight) * dist
+    
     return per
 
 

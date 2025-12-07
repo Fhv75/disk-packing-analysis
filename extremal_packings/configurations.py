@@ -36,6 +36,9 @@ class Configuration:
             Por convención: "D{n}-{índice}" (ej: "D5-7").
         hull_vertices (Optional[List[int]]): Índices de vértices del convex hull.
             Si es None, se calcula bajo demanda.
+        perimeter_edges (Optional[List[Tuple[int, int, float]]]): Lista de tuplas (i, j, weight) que definen el perímetro.
+            Ejemplo: [(0, 4, 2.0)] para cadena significa Per = 2 * dist(0, 4)
+            Si es None, debe ser proporcionado externamente o calculado antes de usar.
         n (int): Número de discos (calculado automáticamente).
     
     Constraints:
@@ -64,10 +67,14 @@ class Configuration:
     edges: List[Edge]
     name: Optional[str] = None
     hull_vertices: Optional[List[int]] = None
+    perimeter_edges: Optional[List[Tuple[int, int, float]]] = None
 
     def __post_init__(self) -> None:
         """
         Valida y normaliza la configuración después de la inicialización.
+        
+        NO calcula perimeter_edges automáticamente para evitar recálculos
+        durante perturbaciones numéricas.
         
         Realiza:
         1. Conversión de coords a numpy array (n, 2)

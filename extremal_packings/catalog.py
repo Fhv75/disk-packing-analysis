@@ -24,6 +24,7 @@ _HARDCODED_EXAMPLES = {
         ], dtype=np.float64),
         edges=[(0, 1), (1, 2), (2, 0)],
         name="D3-1",
+        perimeter_edges=[(0, 1, 1.0), (1, 2, 1.0), (2, 0, 1.0)],  # Triángulo
     ),
     "D3-2": Configuration(
         coords=np.array([
@@ -33,6 +34,7 @@ _HARDCODED_EXAMPLES = {
         ], dtype=np.float64),
         edges=[(0, 1), (1, 2)],
         name="D3-2",
+        perimeter_edges=[(0, 2, 2.0)],  # Cadena colineal
     ),
 }
 

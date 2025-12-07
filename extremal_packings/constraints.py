@@ -65,64 +65,32 @@ def rolling_space_basis(A: np.ndarray, rtol: float = 1e-12) -> np.ndarray:
 
 def compute_perimeter_gradient(config: Configuration) -> np.ndarray:
     """
-    Calcula el gradiente del perímetro de la envolvente convexa
-    con respecto a las coordenadas de los centros.
+    Calcula el gradiente del perímetro usando la definición explícita.
     
-    Para cadenas colineales: ∇Per = 2 * ∇dist(inicio, fin)
-    Para hulls generales: ∇Per = suma de ∇dist(vértices consecutivos)
-    
-    Returns:
-        Array de forma (2n,) con el gradiente.
+    Usa config.perimeter_edges = [(i, j, weight), ...]
+    donde el perímetro es: sum(weight * ||c_j - c_i||)
     """
-    from .perimeter import compute_hull, is_collinear_chain, find_chain_endpoints
-    
     n = config.n
     coords = config.coords
-    hull = config.hull_vertices if config.hull_vertices is not None else compute_hull(config)
     
-    gradient = np.zeros(2 * n, dtype=np.float64)  # Usar float64 explícitamente
+    # REQUERIR que perimeter_edges esté definido
+    if config.perimeter_edges is None:
+        raise ValueError(
+            f"Configuration {config.name} no tiene perimeter_edges definido. "
+            "Debe proporcionarse al crear la configuración."
+        )
     
-    if len(hull) <= 1:
-        return gradient
+    gradient = np.zeros(2 * n, dtype=np.float64)
     
-    # Detectar si es una cadena colineal
-    if is_collinear_chain(config, hull):
-        # Caso especial: cadena colineal
-        # Per = 2 * ||c_fin - c_inicio||
-        # ∇Per = 2 * [∂/∂c_i (||c_fin - c_inicio||)]
-        
-        i, j = find_chain_endpoints(config, hull)
-        
+    # Usar definición explícita del perímetro
+    for (i, j, weight) in config.perimeter_edges:
         diff = coords[j] - coords[i]
         dist = np.linalg.norm(diff)
         
         if dist > np.float64(1e-12):
-            # Vector unitario de i hacia j
             u = diff / dist
-            
-            # Gradiente: ∂dist/∂c_i = -u, ∂dist/∂c_j = +u
-            # Multiplicar por 2 porque Per = 2 * dist
-            gradient[2*i:2*i+2] = np.float64(-2.0) * u
-            gradient[2*j:2*j+2] = np.float64(2.0) * u
-        
-        return gradient
-    
-    # Caso general: polígono convexo
-    # Para cada arista del hull, contribuir al gradiente
-    for k in range(len(hull)):
-        i = hull[k]
-        j = hull[(k + 1) % len(hull)]
-        
-        diff = coords[j] - coords[i]
-        dist = np.linalg.norm(diff)
-        
-        if dist > np.float64(1e-12):
-            # Tangente unitario en dirección i->j
-            t = diff / dist
-            
-            # Contribuciones al gradiente
-            gradient[2*i:2*i+2] -= t
-            gradient[2*j:2*j+2] += t
+            gradient[2*i:2*i+2] -= np.float64(weight) * u
+            gradient[2*j:2*j+2] += np.float64(weight) * u
     
     return gradient
 

@@ -88,7 +88,7 @@ def load_json_file(filepath: Path) -> List[Configuration]:
         
         # Procesar coordenadas (pueden tener expresiones matemáticas)
         coords_raw = graph['centros']
-        coords = np.zeros((n_disks, 2), dtype=np.float64)  # Usar float64 explícitamente
+        coords = np.zeros((n_disks, 2), dtype=np.float64)
         
         for i, (x, y) in enumerate(coords_raw):
             coords[i, 0] = eval_expr(x)
@@ -97,19 +97,50 @@ def load_json_file(filepath: Path) -> List[Configuration]:
         # Procesar aristas
         edges = [tuple(edge) for edge in graph['contactos']]
         
-        # Nombre de la configuración: D{n}-{idx+1}
-        # Por ejemplo: D3-1, D4-2, D5-13, D6-47
+        # Nombre de la configuración
         config_name = f"D{n_disks}-{idx + 1}"
         
+        # Crear configuración temporal SIN perimeter_edges
         config = Configuration(
             coords=coords,
             edges=edges,
             name=config_name
         )
         
+        # CALCULAR perimeter_edges UNA SOLA VEZ desde el hull
+        config.perimeter_edges = _compute_perimeter_edges(config)
+        
         configs.append(config)
     
     return configs
+
+
+def _compute_perimeter_edges(config: Configuration) -> List[Tuple[int, int, float]]:
+    """
+    Calcula la definición explícita del perímetro desde el convex hull.
+    
+    Esta función se ejecuta UNA SOLA VEZ al cargar la configuración.
+    """
+    from .perimeter import compute_hull, is_collinear_chain, find_chain_endpoints
+    
+    hull = compute_hull(config)
+    
+    if len(hull) <= 1:
+        return []
+    
+    # Detectar cadena colineal
+    if is_collinear_chain(config, hull):
+        # Perímetro = 2 * dist(extremo1, extremo2)
+        i, j = find_chain_endpoints(config, hull)
+        return [(i, j, 2.0)]
+    else:
+        # Perímetro = suma de aristas del hull
+        perim_edges = []
+        for k in range(len(hull)):
+            i = hull[k]
+            j = hull[(k + 1) % len(hull)]
+            perim_edges.append((i, j, 1.0))
+        return perim_edges
 
 
 def load_all_configurations(data_dir: str = "data") -> Dict[str, Configuration]:
