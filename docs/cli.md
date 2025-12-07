@@ -1,7 +1,7 @@
 # Interfaz de Línea de Comandos (CLI) - epack
 
 **Comando:** `epack`  
-**Versión:** 1.0.0  
+**Versión:** 1.0.1  
 **Módulo:** `extremal_packings.cli`
 
 ---
@@ -261,7 +261,8 @@ epack analyze D5-7 -p -v -o results.json
 Configuración: D5-7
 ============================================================
 Número de discos (n):     5
-Número de contactos (m):  5
+Número de contactos (m):   5
+Tipo:                     Cluster 2D
 
 Rolling Space:
   Dimensión:              5
@@ -269,21 +270,21 @@ Rolling Space:
 
 Perímetros:
   Centros:                10.000000
-  Discos:                 16.283185
+  Discos (+ 2πr):         16.283185
 
-Gradiente del perímetro (centros):
+Gradiente del perímetro:
   ∇Per(c) = [0.0, 1.18, -1.12, 0.36, -0.7, -0.95, 0.69, -0.95, 1.12, 0.36]
 
-Proyección del gradiente al rolling space:
-  [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+Proyección del gradiente:
+  Proj(∇Per) = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
 
 Espectro del Hessiano Intrínseco:
   Autovalores (5):
-    λ_0: ✓  0.000000e+00
-    λ_1: ✓  0.000000e+00
-    λ_2:    6.909830e-01
-    λ_3:    1.000000e+00
-    λ_4:    1.000000e+00
+    λ_0:  0.000000e+00
+    λ_1:  0.000000e+00
+    λ_2:  6.909830e-01
+    λ_3:  1.000000e+00
+    λ_4:  1.000000e+00
 
 ============================================================
 
@@ -309,7 +310,10 @@ Dimensiones de matrices:
   "is_rigid": false,
   "perimeter_centers": 10.0,
   "perimeter_disks": 16.283185307179586,
-  "eigenvalues": [0.0, 0.0, 0.6909830056250527, 0.9999999999999999, 1.0],
+  "gradient_perimeter": [0.0, 1.175570504, -1.118033988, ...],
+  "projected_gradient": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+  "is_critical": true,
+  "eigenvalues": [0.0, 0.0, 0.6909830056, 0.9999999999, 1.0],
   "coords": [ 
     [0.0, 1.7013016167040798], 
     [-1.6180339887498947, 0.5257311121191335],
@@ -377,11 +381,17 @@ Configuraciones rígidas: 1/13
 ================================================================================
 ```
 
+**Nota sobre la columna "Crítica":**
+
+Una configuración es **crítica a primer orden** si el gradiente proyectado sobre el rolling space es el vector nulo: $\text{Proj}(\nabla \text{Per}) = 0$.
+
+Esto significa que no hay deformaciones infinitesimales (dentro del rolling space) que reduzcan el perímetro. Para ser un **mínimo local**, además se requiere que todos los autovalores no nulos del Hessiano intrínseco sean positivos.
+
 **Formato CSV del Output:**
 ```csv
 name,n_edges,rolling_dim,perimeter_centers,perimeter_disks,gradient_perimeter,projected_gradient,is_critical,min_eigenvalue,max_eigenvalue,is_rigid
-D5-7,5,5,10.0,16.283185307179586,"[0.0, 1.1755705045849465, -1.118033988749895, 0.3632712640026804, -0.6909830056250525, -0.9510565162951536, 0.6909830056250525, -0.9510565162951536, 1.118033988749895, 0.3632712640026804]","[0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]",Si,0.0,1.0,False
-D5-10,6,4,10.0,16.283185307179586,"[-1.0, -1.0, 0.1339745962155613, -0.5000000000000001, -1.0, 1.0, 0.1339745962155613, 0.5000000000000001, 1.7320508075688774, 0.0]","[0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]",Si,0.0,1.4624752955742637,False
+D5-7,5,5,10.0,16.283185,"[0.0, 1.175, -1.118, ...]","[0.0, 0.0, ...]",Si,0.0,1.0,False
+D5-10,6,4,10.0,16.283185,"[-1.0, -1.0, ...]","[0.0, 0.0, ...]",Si,0.0,1.462,False
 ```
 
 ---
@@ -612,4 +622,4 @@ epack plot D5-7 --normals            # Con vectores normales
 
 ---
 
-**Fin de la documentación CLI** | Versión 1.0.0 | Última actualización: 2025-01-15
+**Fin de la documentación CLI** | Versión 1.0.1 | Última actualización: 2025-12-06

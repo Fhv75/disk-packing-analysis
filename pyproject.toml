@@ -4,14 +4,13 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "extremal-packings"
-version = "0.1.0"  # Versión inicial
+version = "0.1.1"
 description = "Análisis geométrico y espectral de configuraciones extremales de discos tangentes"
 readme = "README.md"
 requires-python = ">=3.8"
 license = {text = "MIT"}
 authors = [
-    {name = "Fabián Andrés Henry Vilaxa", email = "tu-email@ejemplo.com"},
-    {name = "Jose Ayala Hoffman"}
+    {name = "Fabián Andrés Henry Vilaxa", email = "fabian.henry.vilaxa@alumnos.uta.cl"},
 ]
 keywords = ["geometry", "disk packing", "rigid configurations", "spectral analysis", "contact graphs"]
 classifiers = [

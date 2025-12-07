@@ -1,6 +1,6 @@
 # Extremal Packings - Análisis de Empaquetamientos de Discos Congruentes
 
-**Versión:** 1.0.0 
+**Versión:** 1.0.1 
 **Autor:** Fabián Andrés Henry Vilaxa, Jose Ayala Hoffman  
 **Licencia:** MIT
 
@@ -24,7 +24,7 @@
 
 ### Motivación
 
-El paquete `extremal_packings` surge de la investigación sobre **perímetros extremos en empaquetamientos de discos congruentes**. El objetivo es estudiar configuraciones de discos unitarios tangentes que minimizan o maximizan el perímetro de su envolvente convexa.
+El paquete `extremal_packings` surge de la investigación sobre perímetros extremos en empaquetamientos de discos congruentes. El objetivo es estudiar configuraciones de discos unitarios tangentes que minimizan o maximizan el perímetro de su envolvente convexa.
 
 ### Alcance
 
@@ -77,7 +77,7 @@ $$u_{ij} = \frac{c_j - c_i}{\|c_j - c_i\|} = \frac{c_j - c_i}{2}$$
 
 La matriz de contacto $A(c) \in \mathbb{R}^{m \times 2n}$ tiene una fila por contacto:
 
-$$\text{fila}_k = [\ldots, 0, -u_{ij}, 0, \ldots, 0, u_{ij}, 0, \ldots]$$
+$$\text{row}_k = [\ldots, 0, -u_{ij}, 0, \ldots, 0, u_{ij}, 0, \ldots]$$
 
 con $-u_{ij}$ en las posiciones $(2i, 2i+1)$ y $u_{ij}$ en $(2j, 2j+1)$.
 
@@ -96,8 +96,8 @@ $$\dim(\text{Roll}(c)) = 2n - \text{rank}(A(c))$$
 **Interpretación física**:
 - Deformaciones infinitesimales que mantienen las distancias de contacto constantes.
 - Incluye movimientos rígidos: 2 traslaciones + 1 rotación = 3 grados.
-- Si $\dim(\text{Roll}) = 3$, la configuración es **infinitesimalmente rígida**.
-- Si $\dim(\text{Roll}) > 3$, hay **flexibilidad** (deformaciones no triviales).
+- Si $\dim(\text{Roll}) = 3$, la configuración es infinitesimalmente rígida.
+- Si $\dim(\text{Roll}) > 3$, hay flexibilidad (deformaciones no triviales).
 
 ### 4. Funcional de Perímetro
 
@@ -112,49 +112,32 @@ $$P(c) = \text{perímetro del casco convexo de } \bigcup_{i=1}^n \{x : \|x - c_i
 
 ### 5. Hessiano del Perímetro
 
-#### 5.1 Hessiano Global $K(c)$
+#### 5.1 Hessiano Intrínseco $H$
 
-Matriz simétrica $K(c) \in \mathbb{R}^{2n \times 2n}$ que representa la segunda derivada de $P(c)$:
+El Hessiano intrínseco se calcula mediante diferenciación numérica del campo vectorial proyectado:
 
-$$K(c) = \nabla^2 P(c)$$
+$$V(c) = P(c) \nabla f(c)$$
 
-**Estructura por bloques**:
+donde $P(c) = R(R^T R)^{-1}R^T$ es el proyector ortogonal sobre $\text{Roll}(c)$.
 
-$$K(c) = \begin{pmatrix}
-K_{11} & \cdots & K_{1n} \\
-\vdots & \ddots & \vdots \\
-K_{n1} & \cdots & K_{nn}
-\end{pmatrix}$$
+**Proyección al rolling space:**
 
-donde cada $K_{ij} \in \mathbb{R}^{2 \times 2}$.
+Una vez calculado $H_{int}$ en el espacio ambiente $\mathbb{R}^{2n}$:
 
-**Contribuciones**:
-- **Diagonales** $K_{ii}$: Interacción del disco $i$ con todos sus vecinos
-- **Fuera de diagonal** $K_{ij}$ ($i \neq j$): Si $(i,j) \in E$, hay contribución del contacto
-
-#### 5.2 Hessiano Intrínseco $H$
-
-Proyección del Hessiano global al rolling space:
-
-$$H = R^T K(c) R$$
+$$H = R^T H_{int} R$$
 
 donde $R \in \mathbb{R}^{2n \times d}$ es una base ortonormal de $\text{Roll}(c)$ con $d = \dim(\text{Roll})$.
-
-**Propiedades**:
-- $H \in \mathbb{R}^{d \times d}$ es simétrica
-- Autovalores $\lambda_1 \leq \lambda_2 \leq \cdots \leq \lambda_d$
 
 **Interpretación**:
 - $\lambda_i > 0$: Curvatura positiva en dirección $i$ (mínimo local estable)
 - $\lambda_i = 0$: Dirección neutra (degeneración)
-- $\lambda_i < 0$: Curvatura negativa (punto de silla, no es mínimo)
+- $\lambda_i < 0$: Curvatura negativa (punto de silla o máximo local)
 
 ### 6. Condiciones de Optimalidad
 
-Para que $c$ sea un punto crítico del perímetro en el rolling space:
+Para que $c$ sea un punto crítico del perímetro en su estrato $\mathcal{C}(G)$:
 
-1. **Primera variación**: $\nabla P(c) \perp \text{Roll}(c)$ (gradiente ortogonal al rolling space). Equivalente a $\langle \nabla \text{Per}(c), \; \delta{c} \rangle = 0 \quad \forall \; \delta{c} \in \text{Roll(c)}$.
-2. **Segunda variación**: $H = R^T K(c) R$ debe ser semidefinida positiva ($\lambda_i \geq 0 \, \forall i$)
+$$\langle \nabla \text{Per}(c), \; \delta{c} \rangle = 0 \quad \forall \; \delta{c} \in \text{Roll(c)}.$$
 
 ---
 
@@ -216,9 +199,7 @@ A(c) ← build_contact_matrix
     ↓
 R ← rolling_space_basis(A)
     ↓
-K(c) ← build_unconstrained_hessian
-    ↓
-H = R^T K R ← project_to_roll
+H(c) ← compute_intrinsic_hessian
     ↓
 λ₁, ..., λ_d ← intrinsic_spectrum(H)
     ↓
@@ -337,50 +318,61 @@ print(f"Dimension rolling space: {R.shape[1]}")
 
 ### 4. `hessian.py`
 
-Cálculo del Hessiano global y proyección al rolling space.
+Cálculo del Hessiano Intrínseco mediante diferenciación numérica.
 
-#### Función `build_unconstrained_hessian`
+#### Función `compute_intrinsic_hessian`
 
 ```python
-def build_unconstrained_hessian(config: Configuration) -> np.ndarray:
-    """Construye Hessiano global K(c) en R^{2n × 2n}."""
+def compute_intrinsic_hessian(
+    config: Configuration, 
+    R: np.ndarray,
+    epsilon: float = None
+) -> np.ndarray:
+    """
+    Calcula el Hessiano intrínseco mediante diferenciación numérica.
+    
+    Implementa: H_int = D(V) donde V(c) = P(c) @ ∇f(c)
+    
+    Por defecto usa epsilon = √(machine_eps) * 10 ≈ 1.5e-7
+    """
 ```
 
-**Estructura**:
+**Algoritmo (Diferenciación Numérica)**:
 
-$$K = \begin{pmatrix}
-K_{11} & \cdots & K_{1n} \\
-\vdots & \ddots & \vdots \\
-K_{n1} & \cdots & K_{nn}
-\end{pmatrix}, \quad K_{ij} \in \mathbb{R}^{2 \times 2}$$
+1. Para cada dirección $k = 1, \ldots, 2n$:
+   - Perturbar: $c_+ = c + \epsilon e_k$, $c_- = c - \epsilon e_k$
+   - Calcular proyectores: $P_+ = P(c_+)$, $P_- = P(c_-)$
+   - Calcular gradientes: $g_+ = \nabla f(c_+)$, $g_- = \nabla f(c_-)$
+   - Campo vectorial: $V_+ = P_+ g_+$, $V_- = P_- g_-$
+   - Derivada: $H_{:,k} = (V_+ - V_-) / (2\epsilon)$
 
-**Contribuciones por contacto** $(i, j)$:
+2. Simetrizar: $H = (H + H^T) / 2$
 
-$$K_{ij} = -\frac{1}{2} P_{ij}, \quad K_{ii} += \frac{1}{2} P_{ij}, \quad K_{jj} += \frac{1}{2} P_{ij}$$
-
-donde $P_{ij} = I - u_{ij} u_{ij}^T$ es el proyector perpendicular a $u_{ij}$.
+**Salida**: Matriz $H_{int} \in \mathbb{R}^{2n \times 2n}$
 
 #### Función `project_to_roll`
 
 ```python
-def project_to_roll(K: np.ndarray, R: np.ndarray) -> np.ndarray:
-    """Proyecta K al rolling space: H = R^T K R."""
+def project_to_roll(H_ambient: np.ndarray, R: np.ndarray) -> np.ndarray:
+    """Proyecta el Hessiano del espacio ambiente al rolling space: H = R^T H_ambient R."""
 ```
 
-**Operación**: Multiplicación matricial $H = R^T K R$
+**Operación**: Multiplicación matricial $H = R^T H_{ambient} R$
 
 **Dimensiones**:
-- Entrada: $K \in \mathbb{R}^{2n \times 2n}$, $R \in \mathbb{R}^{2n \times d}$
+- Entrada: $H_{ambient} \in \mathbb{R}^{2n \times 2n}$, $R \in \mathbb{R}^{2n \times d}$
 - Salida: $H \in \mathbb{R}^{d \times d}$
 
 #### Función `intrinsic_spectrum`
 
 ```python
-def intrinsic_spectrum(H: np.ndarray) -> np.ndarray:
-    """Calcula autovalores de H ordenados de menor a mayor."""
+def intrinsic_spectrum(H: np.ndarray, tol: float = 1e-12) -> np.ndarray:
+    """Calcula autovalores de H usando np.linalg.eigvalsh (matrices simétricas)."""
 ```
 
-**Método**: `numpy.linalg.eigvalsh` (para matrices simétricas)
+**Método**: `numpy.linalg.eigvalsh` (optimizado para matrices simétricas)
+
+**Tolerancia**: $\text{tol} = 10^{-12}$ para clasificación de autovalores
 
 **Salida**: Array 1D con autovalores $\lambda_1 \leq \cdots \leq \lambda_d$
 
@@ -390,407 +382,59 @@ def intrinsic_spectrum(H: np.ndarray) -> np.ndarray:
 
 Cálculo de perímetros y envolventes convexas.
 
-#### Función `compute_hull`
+#### Función `is_collinear_chain`
 
 ```python
-def compute_hull(config: Configuration) -> np.ndarray:
-    """Calcula casco convexo de centros usando scipy.spatial.ConvexHull."""
+def is_collinear_chain(config: Configuration, hull: List[int]) -> bool:
+    """
+    Verifica si el hull forma una cadena colineal.
+    
+    Una cadena colineal es un conjunto de puntos en línea recta donde
+    todos los centros están alineados y el hull solo incluye los extremos.
+    """
 ```
 
-**Salida**: Índices de vértices en el casco, ordenados en sentido antihorario.
+**Criterio**: Producto cruz de los tres primeros puntos del hull < $10^{-6}$
 
-#### Función `perimeter_centers`
+**Uso**: Para decidir si aplicar la fórmula especial de perímetro: $\text{Per} = 2 \times \text{dist}(extremos) + 2\pi r$
+
+#### Función `find_chain_endpoints`
 
 ```python
-def perimeter_centers(config: Configuration) -> float:
-    """Perímetro del casco convexo de centros."""
+def find_chain_endpoints(config: Configuration, hull: List[int]) -> tuple[int, int]:
+    """
+    Encuentra los extremos de una cadena colineal.
+    
+    Para una cadena colineal, los extremos son los dos puntos del hull
+    más distantes entre sí.
+    """
+```
+
+**Algoritmo**: Buscar los dos puntos en el hull con distancia máxima
+
+**Retorno**: Tupla `(índice_inicio, índice_fin)`
+
+#### Función `compute_disk_hull_geometry`
+
+```python
+def compute_disk_hull_geometry(config: Configuration, radius: float = 1.0) -> Optional[Dict]:
+    """
+    Calcula la geometría completa del hull de discos (tangentes externas + arcos).
+    
+    Returns:
+        Diccionario con:
+        - 'tangent_segments': Lista de segmentos tangentes {start, end}
+        - 'arcs': Lista de arcos {center, radius, angle_start, angle_end}
+    """
 ```
 
 **Algoritmo**:
 
-1. Calcular casco: `hull = ConvexHull(coords)`
-2. Sumar longitudes: $\sum_{k} \|v_{k+1} - v_k\|$
-
-#### Función `perimeter_disks`
-
-```python
-def perimeter_disks(config: Configuration) -> float:
-    """Perímetro del cluster de discos (centros + arcos circulares)."""
-```
-
-**Algoritmo**:
-
-1. Casco de centros con índices $h_1, \ldots, h_k$
-2. Para cada arista $(h_i, h_{i+1})$:
-   - Segmento recto si $(h_i, h_{i+1}) \in E$
-   - Arco circular de ángulo $\theta$ si no hay contacto
-3. Perímetro total = suma de segmentos + arcos
-
-**Complejidad**: $O(n \log n)$ (dominado por ConvexHull)
-
----
-
-### 6. `analysis.py`
-
-Pipeline completo de análisis.
-
-#### Clase `AnalysisResult`
-
-Contenedor de resultados con propiedades calculadas:
-
-```python
-@property
-def rolling_dim(self) -> int:
-    """Dimensión del rolling space."""
-    return self.R.shape[1]
-
-@property
-def is_rigid(self) -> bool:
-    """True si dim(Roll) ≤ 3 (solo movimientos rígidos)."""
-    return self.rolling_dim <= 3
-
-@property
-def is_flexible(self) -> bool:
-    """True si dim(Roll) > 3 (hay flexibilidad)."""
-    return not self.is_rigid
-
-@property
-def has_negative_eigenvalue(self) -> bool:
-    """True si existe λ < -10^{-10}."""
-    if len(self.eigenvalues) == 0:
-        return False
-    return self.eigenvalues[0] < -1e-10
-```
-
-#### Función `analyze_configuration`
-
-```python
-def analyze_configuration(config: Configuration) -> AnalysisResult:
-    """Pipeline completo: validación → A → R → K → H → λ."""
-```
-
-**Pasos**:
-
-1. Validación del grafo
-2. Matriz de contacto $A(c)$
-3. Rolling space $R = \ker(A)$
-4. Perímetros (centros y discos)
-5. Gradiente $\nabla{\text{Per}}(c)$ y proyección sobre $\text{Roll}(c)$
-6. Hessiano global $K(c)$
-7. Hessiano intrínseco $H = R^T K R$
-8. Espectro de $H$
-
-**Ejemplo completo**:
-
-```python
-from extremal_packings import load_configuration, analyze_configuration
-
-config = load_configuration("D5-7")
-result = analyze_configuration(config)
-
-print(f"n = {config.n}, m = {len(config.edges)}")
-print(f"dim(Roll) = {result.rolling_dim}")
-print(f"Rígida: {result.is_rigid}")
-print(f"Crítica: {result.is_critical}")
-print(f"Autovalores: {result.eigenvalues}")
-print(f"Perímetro: {result.perimeter_disks:.4f}")
-```
-
----
-
-### 7. `catalog.py`
-
-Gestión del catálogo de configuraciones predefinidas.
-
-#### Sistema de Nomenclatura
-
-Formato: **`D{n}-{idx}`**
-
-- `n`: Número de discos (3-6)
-- `idx`: Índice secuencial (1, 2, 3, ...)
-
-Ejemplos:
-- `D3-1`: Triángulo equilátero
-- `D3-2`: Cadena de 3 discos
-- `D5-7`: Pentágono regular
-- `D6-46`: Configuración colineal de 6 discos
-
-#### Funciones Principales
-
-```python
-def list_configurations() -> list[str]:
-    """Lista todos los nombres disponibles, ordenados naturalmente."""
-
-def load_configuration(name: str) -> Configuration:
-    """Carga configuración por nombre."""
-
-def get_configurations_by_size(n: int) -> list[str]:
-    """Filtra configuraciones con n discos."""
-
-def get_catalog_stats() -> dict[str, int]:
-    """Estadísticas: total, por tamaño, rango."""
-```
-
----
-
-### 8. `json_loader.py`
-
-Carga de configuraciones desde archivos JSON.
-
-#### Formato JSON
-
-```json
-{
-    "version": "1.1",
-    "indexing": "0-based",
-    "angles": "degrees",
-    "radius": "1",
-    "graphs": [
-        {
-            "discos": 3,
-            "centros": [[0,0], [2,0], ["1","sqrt(3)"]],
-            "contactos": [[0,1], [1,2], [2,0]]
-        }
-    ]
-}
-```
-
-**Características**:
-
-- Soporte para expresiones simbólicas: `"sqrt(3)"`, `"2*cosd(60)"`
-- Evaluación con `sympy`
-- Validación de índices de contactos
-
-#### Función `load_all_configurations`
-
-```python
-def load_all_configurations(data_dir: str) -> dict[str, Configuration]:
-    """Carga todas las configs de data/*.json."""
-```
-
-**Proceso**:
-
-1. Escanear `*.json` en `data_dir`
-2. Para cada archivo, parsear JSON
-3. Evaluar expresiones simbólicas
-4. Crear objetos `Configuration`
-5. Asignar nombres: `D{n}-{idx}`
-
----
-
-### 9. `plotting.py`
-
-Visualización con Matplotlib.
-
-#### Función `plot_disks`
-
-```python
-def plot_disks(
-    config: Configuration,
-    show_hull: bool = True,
-    ax: Optional[plt.Axes] = None
-) -> plt.Figure:
-    """Grafica discos con envolvente convexa opcional."""
-```
-
-**Elementos visualizados**:
-
-- Círculos: Discos con borde negro
-- Centros: Puntos rojos
-- Contactos: Líneas punteadas grises
-- Casco convexo: Polígono azul semitransparente (si `show_hull=True`)
-
-#### Función `plot_contact_graph`
-
-```python
-def plot_contact_graph(
-    config: Configuration,
-    show_normals: bool = False,
-    ax: Optional[plt.Axes] = None
-) -> plt.Figure:
-    """Visualiza grafo de contacto con normales opcionales."""
-```
-
-**Elementos**:
-
-- Nodos: Círculos en posiciones de centros
-- Aristas: Líneas entre contactos
-- Normales: Vectores unitarios $u_{ij}$ (si `show_normals=True`)
-
-#### Función `plot_spectrum`
-
-```python
-def plot_spectrum(
-    eigenvalues: np.ndarray,
-    title: str = "",
-    ax: Optional[plt.Axes] = None
-) -> plt.Figure:
-    """Gráfico de barras de autovalores."""
-```
-
-**Formato**:
-
-- Eje X: Índice del autovalor
-- Eje Y: Valor de $\lambda_i$
-- Colores: Rojo (< 0), Amarillo (≈ 0), Verde (> 0)
-
----
-
-### 10. `interface.py`
-
-Funciones de alto nivel para usuarios finales.
-
-#### Función `print_analysis_summary`
-
-```python
-def print_analysis_summary(result: AnalysisResult) -> None:
-    """Imprime resumen formateado del análisis."""
-```
-
-**Salida ejemplo**:
-
-```
-========================================
-Configuración: D5-7
-========================================
-Discos: 5
-Contactos: 5
-Dimensión rolling space: 5
-Rígida: False
-
-Autovalores del Hessiano intrínseco:
-  λ[0] =  0.0000e+00
-  λ[1] =  0.0000e+00
-  λ[2] =  6.6910e-01
-  λ[3] =  1.0000e+00
-  λ[4] =  1.0000e+00
-
-Perímetros:
-  Centros: 10.0000
-  Discos:  16.2832
-========================================
-```
-
-#### Función `show_complete_analysis`
-
-```python
-def show_complete_analysis(config: Configuration) -> None:
-    """Análisis completo con 3 gráficos en una figura."""
-```
-
-**Layout**: 1 fila × 3 columnas
-
-1. **Izquierda**: Discos + casco (`plot_disks`)
-2. **Centro**: Grafo de contacto (`plot_contact_graph`)
-3. **Derecha**: Espectro (`plot_spectrum`)
-
-#### Función `create_dashboard`
-
-```python
-def create_dashboard(configs: list[str]) -> None:
-    """Dashboard comparativo para múltiples configuraciones."""
-```
-
-**Tabla comparativa**:
-
-| Config | n | m | dim(Roll) | Perímetro | λ_min | λ_max |
-|--------|---|---|-----------|-----------|-------|-------|
-| D5-1   | 5 | 4 | 5         | 14.5678   | 0 | 0.83  |
-| D5-7   | 5 | 5 | 3         | 16.2832   | 0.00  | 1  |
-
----
-
-### 11. `cli.py`
-
-Interfaz de línea de comandos para acceso rápido a todas las funcionalidades.
-
-**Documentación completa**: Ver [docs/cli.md](cli.md)
-
-#### Comando Principal: `epack`
-
-El CLI proporciona 6 comandos principales:
-
-```bash
-epack list          # Listar configuraciones
-epack info D5-7     # Información detallada
-epack analyze D5-7  # Análisis variacional completo
-epack compare -s 5  # Comparar configuraciones
-epack plot D5-7     # Visualización interactiva
-epack stats         # Estadísticas del catálogo
-```
-
-#### Ejemplo de Uso Básico
-
-```bash
-# Explorar catálogo
-epack list -s 5
-
-# Analizar con gráficos
-epack analyze D5-7 --plot
-
-# Comparar y exportar
-epack compare -s 5 -o results.csv
-```
-
-#### Características Principales
-
-- **Análisis rápido**: Sin escribir código Python
-- **Exportación flexible**: JSON, CSV
-- **Visualización integrada**: Gráficos interactivos
-- **Comparación batch**: Analizar múltiples configuraciones
-- **Progreso visual**: Barras de progreso para operaciones largas
-
-**Para guía completa y ejemplos avanzados**: [Documentación del CLI](cli.md)
-
----
-
-## Catálogo de Configuraciones
-
-### Estadísticas del Catálogo
-
-```python
-from extremal_packings import get_catalog_stats
-
-stats = get_catalog_stats()
-# stats = {
-#     'total': 65,
-#     'by_size': {3: 2, 4: 5, 5: 13, 6: 45},
-#     'min_disks': 3,
-#     'max_disks': 6
-# }
-```
-
-### Configuraciones Destacadas
-
-#### D3-1: Triángulo Equilátero
-
-```python
-config = load_configuration("D3-1")
-# 3 discos, 3 contactos
-# Rígida (dim(Roll) = 3)
-# Perímetro mínimo para 3 discos
-```
-
-#### D3-2: Cadena de 3 Discos
-
-```python
-config = load_configuration("D3-2")
-# 3 discos, 2 contactos
-# Flexible (dim(Roll) = 4)
-```
-
-#### D5-7: Pentágono Regular
-
-```python
-config = load_configuration("D5-7")
-# 5 discos en vértices de pentágono regular
-# 5 contactos formando ciclo
-# Rígida pero con λ = 0 (frontera de estabilidad)
-```
-
-#### D6-1 a D6-45: Hexágono y Variantes
-
-- 46 configuraciones distintas de 6 discos
+1. Calcular segmentos tangentes externos entre discos consecutivos del hull
+2. Calcular arcos circulares para cada disco del hull
+3. Manejar casos especiales (cadenas colineales con semicírculos en extremos)
+
+**Salida**: Diccionario con geometría completa para visualización
 
 ---
 
@@ -815,29 +459,29 @@ for name in configs:
           f"{result.eigenvalues[0]:<12.4e}")
 ```
 
-
-
-### Ejemplo 2: Pipeline Personalizado
+### Ejemplo 2: Acceso a Componentes del Pipeline
 
 ```python
 import numpy as np
-from extremal_packings.configurations import Configuration
+from extremal_packings import load_configuration, analyze_configuration
 from extremal_packings.constraints import build_contact_matrix, rolling_space_basis
-from extremal_packings.hessian import build_unconstrained_hessian, project_to_roll
+from extremal_packings.hessian import compute_intrinsic_hessian, project_to_roll
 
-# Crear configuración
-config = Configuration(
-    coords=np.array([[0,0], [2,0], [4,0]]),
-    edges=[(0,1), (1,2)]
-)
+# Cargar configuración
+config = load_configuration("D5-7")
 
-# Pipeline manual
+# Ejecutar pipeline completo
+result = analyze_configuration(config)
+
+# O acceder a componentes individuales
 A = build_contact_matrix(config)
 R = rolling_space_basis(A)
-K = build_unconstrained_hessian(config)
-H = project_to_roll(K, R)
+H_ambient = compute_intrinsic_hessian(config, R)
+H = project_to_roll(H_ambient, R)
 
-print(f"A: {A.shape}, R: {R.shape}, K: {K.shape}, H: {H.shape}")
+print(f"A: {A.shape}, R: {R.shape}")
+print(f"H_ambient: {H_ambient.shape}, H: {H.shape}")
+print(f"Autovalores: {result.eigenvalues}")
 ```
 
 ---
@@ -902,29 +546,6 @@ print_analysis_summary(result)
 
 ---
 
-## Referencias
-
-### Artículos Científicos
-
-1. **Connelly, R.** (1980). *The rigidity of polyhedral surfaces*. Mathematics Magazine, 52(5), 275-283.
-
-2. **Thurston, W.** (1998). *Shapes of polyhedra and triangulations of the sphere*. The Epstein Birthday Schrift, 511-549.
-
-3. **Gromov, M.** (1983). *Filling Riemannian manifolds*. Journal of Differential Geometry, 18(1), 1-147.
-
-### Libros de Referencia
-
-4. **Grünbaum, B., & Shephard, G. C.** (1987). *Tilings and Patterns*. W. H. Freeman.
-
-5. **Pach, J., & Agarwal, P. K.** (1995). *Combinatorial Geometry*. Wiley-Interscience.
-
-### Recursos Online
-
-- **OEIS A085632**: Número de penny graphs con n vértices
-- **ConvexHull Documentation**: [SciPy Spatial](https://docs.scipy.org/doc/scipy/reference/generated/scipy.spatial.ConvexHull.html)
-
----
-
 ## Apéndices
 
 ### A. Nomenclatura Matemática
@@ -939,8 +560,7 @@ print_analysis_summary(result)
 | $A(c)$ | Matriz de contacto ($m \times 2n$) |
 | $\text{Roll}(c)$ | Rolling space ($\dim = 2n - \text{rank}(A)$) |
 | $R$ | Base ortonormal de $\text{Roll}(c)$ |
-| $K(c)$ | Hessiano global ($2n \times 2n$) |
-| $H$ | Hessiano intrínseco ($d \times d$) |
+| $H(c)$ | Hessiano intrínseco |
 | $\lambda_i$ | Autovalor $i$ de $H$ |
 | $\text{Per}(c)$ | Perímetro de la envolvente de centros |
 | $\mathcal{P}(c)$ | Perímetro del cluster |

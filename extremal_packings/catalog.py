@@ -18,19 +18,19 @@ from .json_loader import load_all_configurations
 _HARDCODED_EXAMPLES = {
     "D3-1": Configuration(
         coords=np.array([
-            [0.0, 0.0],
-            [2.0, 0.0],
-            [1.0, np.sqrt(3.0)],
-        ]),
+            [np.float64(0.0), np.float64(0.0)],
+            [np.float64(2.0), np.float64(0.0)],
+            [np.float64(1.0), np.sqrt(np.float64(3.0))],
+        ], dtype=np.float64),
         edges=[(0, 1), (1, 2), (2, 0)],
         name="D3-1",
     ),
     "D3-2": Configuration(
         coords=np.array([
-            [0.0, 0.0],
-            [2.0, 0.0],
-            [4.0, 0.0],
-        ]),
+            [np.float64(0.0), np.float64(0.0)],
+            [np.float64(2.0), np.float64(0.0)],
+            [np.float64(4.0), np.float64(0.0)],
+        ], dtype=np.float64),
         edges=[(0, 1), (1, 2)],
         name="D3-2",
     ),

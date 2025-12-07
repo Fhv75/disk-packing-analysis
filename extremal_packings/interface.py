@@ -26,11 +26,19 @@ def print_analysis_summary(result: AnalysisResult) -> None:
     print(f"Número de discos: {config.n}")
     print(f"Número de contactos: {len(config.edges)}")
     print(f"Dimensión del rolling space: {result.R.shape[1]}")
-    print(f"Perímetro (centros): {result.perimeter_centers:.4f}")
-    print(f"Perímetro (discos): {result.perimeter_disks:.4f}")
-    print(f"\nAutovalores del Hessiano intrínseco:")
-    for i, val in enumerate(result.eigenvalues):
-        print(f"  λ[{i}] = {val:.6e}")
+    print(f"Perímetro (centros): {result.perimeter_centers:.6f}")
+    print(f"Perímetro (discos): {result.perimeter_disks:.6f}")
+    
+    # Aproximar valores pequeños a cero
+    eigenvalues_display = result.eigenvalues.copy()
+    eigenvalues_display[np.abs(eigenvalues_display) < 1e-12] = 0.0
+    
+    print(f"\nEspectro del Hessiano Intrínseco:")
+    print(f"  Autovalores ({len(eigenvalues_display)}):")
+    
+    for i, val in enumerate(eigenvalues_display):
+        print(f"    λ[{i}] = {val:12.6e}")
+    
     print(f"{'='*60}\n")
 
 

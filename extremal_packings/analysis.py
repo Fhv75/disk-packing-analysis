@@ -45,6 +45,7 @@ Examples
 from __future__ import annotations
 from dataclasses import dataclass
 import numpy as np
+from scipy.linalg import null_space
 
 from .configurations import Configuration
 from .contact_graphs import check_graph_validity
@@ -59,7 +60,7 @@ from .perimeter import (
     perimeter_disks,
 )
 from .hessian import (
-    build_unconstrained_hessian,
+    compute_intrinsic_hessian,
     project_to_roll,
     intrinsic_spectrum,
 )
@@ -74,26 +75,23 @@ class AnalysisResult:
         config (Configuration): Configuración analizada.
         A (np.ndarray): Matriz de contacto de dimensión (m, 2n).
         R (np.ndarray): Base ortonormal del rolling space (2n, d).
-        K (np.ndarray): Hessiano global no restringido (2n, 2n).
+        K (np.ndarray): Hessiano intrínseco en espacio ambiente (2n, 2n).
         H (np.ndarray): Hessiano intrínseco proyectado (d, d).
         eigenvalues (np.ndarray): Autovalores ordenados de H.
         perimeter_centers (float): Perímetro de convex hull de centros.
         perimeter_disks (float): Perímetro del cluster de discos.
+        grad_p (np.ndarray): Gradiente del perímetro (2n,).
+        proj_grad_p (np.ndarray): Gradiente proyectado al rolling space (2n,).
     
     Properties:
         rolling_dim (int): Dimensión del rolling space.
         is_rigid (bool): True si rolling_dim == 0.
         is_flexible (bool): True si rolling_dim > 0.
+        is_critical (bool): True si gradiente proyectado ≈ 0.
         has_negative_eigenvalue (bool): True si min(eigenvalues) < 0.
-    
-    Examples:
-        >>> result = analyze_configuration(config)
-        >>> result.rolling_dim
-        3
-        >>> result.is_flexible
-        True
-        >>> result.eigenvalues
-        array([0.0, 0.618, 1.618])
+        n_stable_modes (int): Número de autovalores positivos.
+        n_unstable_modes (int): Número de autovalores negativos.
+        n_neutral_modes (int): Número de autovalores cero.
     """
     config: Configuration
 
@@ -168,7 +166,7 @@ class AnalysisResult:
         Verifica si el Hessiano intrínseco tiene autovalores negativos.
         
         Returns:
-            True si existe λ < -10⁻¹⁰ (considerando tolerancia numérica).
+            True si existe λ < -10⁻¹⁴ (considerando tolerancia numérica).
         
         Notes:
             Un autovalor negativo indica que la configuración no es
@@ -176,7 +174,42 @@ class AnalysisResult:
         """
         if len(self.eigenvalues) == 0:
             return False
-        return self.eigenvalues[0] < -1e-10
+        return self.eigenvalues[0] < -1e-14  # Aumentar de -1e-10 a -1e-14
+
+    @property
+    def n_stable_modes(self) -> int:
+        """Número de modos estables (autovalores positivos)."""
+        return int(np.sum(self.eigenvalues > 1e-14))
+    
+    @property
+    def n_unstable_modes(self) -> int:
+        """Número de modos inestables (autovalores negativos)."""
+        return int(np.sum(self.eigenvalues < -1e-14))
+    
+    @property
+    def n_neutral_modes(self) -> int:
+        """Número de modos neutros (autovalores ≈ 0)."""
+        return int(np.sum(np.abs(self.eigenvalues) <= 1e-14))
+    
+    @property
+    def is_local_minimum(self) -> bool:
+        """
+        Verifica si es un mínimo local estricto.
+        
+        Returns:
+            True si es crítico y todos los autovalores no nulos son positivos.
+        """
+        return self.is_critical and self.n_unstable_modes == 0 and self.n_stable_modes > 0
+    
+    @property
+    def is_saddle_point(self) -> bool:
+        """
+        Verifica si es un punto silla.
+        
+        Returns:
+            True si tiene autovalores negativos.
+        """
+        return self.has_negative_eigenvalue
 
 
 def analyze_configuration(config: Configuration) -> AnalysisResult:
@@ -186,11 +219,12 @@ def analyze_configuration(config: Configuration) -> AnalysisResult:
     Ejecuta todas las etapas del análisis en orden:
     1. Validación del grafo de contacto
     2. Construcción de la matriz de contacto A(c)
-    3. Cálculo del rolling space (ker A)
+    3. Cálculo del rolling space (ker A) usando scipy.linalg.null_space
     4. Cálculo de perímetros
-    5. Construcción del Hessiano global K(c)
-    6. Proyección al Hessiano intrínseco H
-    7. Análisis espectral de H
+    5. Cálculo del gradiente y proyección
+    6. Construcción del Hessiano intrínseco mediante diferenciación numérica
+    7. Proyección al rolling space
+    8. Análisis espectral de H
     
     Args:
         config: Configuración a analizar.
@@ -202,31 +236,14 @@ def analyze_configuration(config: Configuration) -> AnalysisResult:
         ValueError: Si el grafo no es conexo o tiene vértices con grado > 6.
         ValueError: Si los centros de algún contacto coinciden.
     
-    Examples:
-        >>> from extremal_packings import Configuration, analyze_configuration
-        >>> import numpy as np
-        >>> 
-        >>> # Cadena de 3 discos
-        >>> coords = np.array([[0,0], [2,0], [4,0]])
-        >>> edges = [(0,1), (1,2)]
-        >>> config = Configuration(coords=coords, edges=edges)
-        >>> result = analyze_configuration(config)
-        >>> 
-        >>> # Inspeccionar resultados
-        >>> print(f"Rolling space dim: {result.R.shape[1]}")
-        >>> print(f"Eigenvalues: {result.eigenvalues}")
-        >>> print(f"Perimeter: {result.perimeter_disks:.4f}")
-    
     Notes:
+        - Usa scipy.linalg.null_space para garantizar consistencia exacta
+          con el código de referencia de ManifoldSystem.
+        - El Hessiano intrínseco se calcula mediante diferenciación
+          numérica del gradiente proyectado, capturando automáticamente
+          la curvatura de la variedad de restricciones.
         - Para configuraciones sin contactos (m=0), Roll(c) = ℝ²ⁿ.
-        - Autovalores pequeños (|λ| < 10⁻¹⁰) se consideran cero numérico.
-        - El orden de los autovalores es no-decreciente.
-    
-    See Also:
-        build_contact_matrix: Construcción de A(c).
-        rolling_space_basis: Cálculo de ker(A).
-        build_unconstrained_hessian: Construcción de K(c).
-        intrinsic_spectrum: Cálculo de autovalores de H.
+        - Autovalores pequeños (|λ| < 10⁻¹²) se consideran cero numérico.
     """
 
     # -------------------------------
@@ -244,9 +261,10 @@ def analyze_configuration(config: Configuration) -> AnalysisResult:
     # -------------------------------
     if len(config.edges) == 0:
         # Caso sin contactos: ker(A) = R^{2n}
-        R = np.eye(2 * config.n)
+        R = np.eye(2 * config.n, dtype=np.float64)
     else:
-        R = rolling_space_basis(A)
+        # Usar scipy.linalg.null_space con tolerancia 1e-12 (igual que referencia)
+        R = null_space(A, rcond=1e-12)
 
     # -------------------------------
     # 4. Perímetros
@@ -261,20 +279,21 @@ def analyze_configuration(config: Configuration) -> AnalysisResult:
     grad_p_proj = project_gradient_to_kernel(grad_p, R)
 
     # -------------------------------
-    # 6. Hessiano global
+    # 6. Hessiano Intrínseco (DIFERENCIACIÓN NUMÉRICA)
     # -------------------------------
-    K = build_unconstrained_hessian(config)
-
+    # Calcular en espacio ambiente capturando curvatura
+    H_ambient = compute_intrinsic_hessian(config, R)
+    
     # -------------------------------
-    # 7. Hessiano proyectado
+    # 7. Proyección al Rolling Space
     # -------------------------------
-    H = project_to_roll(K, R)
-
+    H = project_to_roll(H_ambient, R)
+    
     # -------------------------------
     # 8. Autovalores
     # -------------------------------
     eigenvalues = intrinsic_spectrum(H)
-
+    
     # -------------------------------
     # Empaquetar resultados
     # -------------------------------
@@ -282,7 +301,7 @@ def analyze_configuration(config: Configuration) -> AnalysisResult:
         config=config,
         A=A,
         R=R,
-        K=K,
+        K=H_ambient,
         H=H,
         grad_p=grad_p,
         proj_grad_p=grad_p_proj,

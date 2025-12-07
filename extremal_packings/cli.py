@@ -5,6 +5,7 @@ Interfaz de línea de comandos para extremal_packings.
 import click
 import json
 import sys
+import numpy as np
 from pathlib import Path
 from typing import Optional
 
@@ -98,39 +99,52 @@ def analyze(name: str, output: Optional[str], plot: bool, verbose: bool):
     click.echo(f"\n🔍 Analizando {name}...\n")
     result = analyze_configuration(config)
     
+    # Detectar si es cadena colineal
+    from extremal_packings.perimeter import compute_hull, is_collinear_chain
+    hull = compute_hull(config)
+    is_chain = is_collinear_chain(config, hull)
+    
     # Mostrar resumen
     click.echo(f"{'='*60}")
     click.echo(f"Configuración: {config.name}")
     click.echo(f"{'='*60}")
     click.echo(f"Número de discos (n):     {config.n}")
     click.echo(f"Número de contactos (m):  {len(config.edges)}")
+    
+    if is_chain:
+        click.echo(f"Tipo:                     Cadena colineal")
+    else:
+        click.echo(f"Tipo:                     Cluster 2D")
+    
     click.echo(f"\nRolling Space:")
     click.echo(f"  Dimensión:              {result.rolling_dim}")
     click.echo(f"  Rigidez:                {'Rígida' if result.is_rigid else 'Flexible'}")
+    
     click.echo(f"\nPerímetros:")
     click.echo(f"  Centros:                {result.perimeter_centers:.6f}")
-    click.echo(f"  Discos:                 {result.perimeter_disks:.6f}")
+    click.echo(f"  Discos (+ 2πr):         {result.perimeter_disks:.6f}")
     
-    click.echo(f"\nGradiente del perímetro (centros):")
-    #Aproximar valores pequeños a cero para mejor visualización
-    click.echo(f"  ∇Per(c) = {result.grad_p.tolist()}")
-    click.echo(f"\Proyección del gradiente al rolling space:")
-    click.echo(f"  {result.proj_grad_p.tolist()}")
+    # Aproximar gradiente a cero si es muy pequeño
+    grad_display = result.grad_p.copy()
+    grad_display[np.abs(grad_display) < 1e-12] = 0.0
+    
+    proj_grad_display = result.proj_grad_p.copy()
+    proj_grad_display[np.abs(proj_grad_display) < 1e-12] = 0.0
+    
+    click.echo(f"\nGradiente del perímetro:")
+    click.echo(f"  ∇Per(c) = {grad_display.tolist()}")
+    click.echo(f"\nProyección del gradiente:")
+    click.echo(f"  Proj(∇Per) = {proj_grad_display.tolist()}")
+    
+    # Aproximar autovalores a cero si son muy pequeños
+    eigenvalues_display = result.eigenvalues.copy()
+    eigenvalues_display[np.abs(eigenvalues_display) < 1e-12] = 0.0
     
     click.echo(f"\nEspectro del Hessiano Intrínseco:")
-    click.echo(f"  Autovalores ({len(result.eigenvalues)}):")
+    click.echo(f"  Autovalores ({len(eigenvalues_display)}):")
     
-    for i, lam in enumerate(result.eigenvalues):
-        if lam < -1e-10:
-            sign = "⚠️  "
-        elif abs(lam) < 1e-10:
-            sign = "✓  "
-        else:
-            sign = "   "
-        click.echo(f"    λ_{i}: {sign}{lam:12.6e}")
-    
-    if result.has_negative_eigenvalue:
-        click.echo(f"\n⚠️  Advertencia: Autovalor negativo (no es mínimo local)")
+    for i, lam in enumerate(eigenvalues_display):
+        click.echo(f"    λ_{i}: {lam:12.6e}")
     
     click.echo(f"{'='*60}\n")
     
@@ -153,7 +167,7 @@ def analyze(name: str, output: Optional[str], plot: bool, verbose: bool):
             'is_rigid': result.is_rigid,
             'perimeter_centers': float(result.perimeter_centers),
             'perimeter_disks': float(result.perimeter_disks),
-            'eigenvalues': result.eigenvalues.tolist(),
+            'eigenvalues': eigenvalues_display.tolist(),
             'coords': config.coords.tolist(),
             'edges': config.edges,
         }
@@ -168,16 +182,10 @@ def analyze(name: str, output: Optional[str], plot: bool, verbose: bool):
     if plot:
         click.echo("📊 Generando gráficos...\n")
         
-        fig, axes = plt.subplots(1, 3, figsize=(16, 5))
+        fig, axes = plt.subplots(1, 2, figsize=(14, 6))
         
-        # Plot 1: Discos - PASAR ax explícitamente
         plot_disks(config, ax=axes[0], show_hull=True)
-        
-        # Plot 2: Grafo de contacto - PASAR ax explícitamente
         plot_contact_graph(config, ax=axes[1], show_normals=False)
-        
-        # Plot 3: Espectro - PASAR ax explícitamente
-        plot_spectrum(result.eigenvalues, ax=axes[2], config_name=config.name)
         
         plt.tight_layout()
         plt.show()

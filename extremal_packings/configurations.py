@@ -81,7 +81,7 @@ class Configuration:
             ValueError: Si hay bucles (i == j) en edges.
             ValueError: Si los índices están fuera de rango.
         """
-        coords = np.asarray(self.coords, dtype=float)
+        coords = np.asarray(self.coords, dtype=np.float64)  # Usar float64 explícitamente
         if coords.ndim != 2 or coords.shape[1] != 2:
             raise ValueError("coords debe ser un array de forma (n,2)")
         self.coords = coords

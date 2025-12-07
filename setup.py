@@ -5,8 +5,8 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setup(
     name="extremal-packings",
-    version="0.1.0",
-    author="Fabián Andrés Henry Vilaxa, Jose Ayala Hoffman",
+    version="0.1.1",
+    author="Fabián Andrés Henry Vilaxa",
     author_email="fabian.henry.vilaxa@alumnos.uta.cl",
     description="Análisis geométrico y espectral de configuraciones de discos unitarios tangentes",
     long_description=long_description,

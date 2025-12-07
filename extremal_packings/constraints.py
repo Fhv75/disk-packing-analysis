@@ -1,6 +1,7 @@
 from __future__ import annotations
 from typing import Dict, Tuple
 import numpy as np
+from scipy.linalg import null_space
 from .configurations import Configuration
 
 
@@ -28,7 +29,7 @@ def build_contact_matrix(config: Configuration) -> np.ndarray:
     """
     n = config.n
     m = len(config.edges)
-    A = np.zeros((m, 2 * n), dtype=float)
+    A = np.zeros((m, 2 * n), dtype=np.float64)  # Usar float64 explícitamente
     normals = contact_normals(config)
     for row_idx, (i, j) in enumerate(config.edges):
         u = normals[(i, j)]
@@ -37,25 +38,28 @@ def build_contact_matrix(config: Configuration) -> np.ndarray:
     return A
 
 
-def rolling_space_basis(A: np.ndarray, rtol: float = 1e-10) -> np.ndarray:
+def rolling_space_basis(A: np.ndarray, rtol: float = 1e-12) -> np.ndarray:
     """
-    Calcula una base ortonormal aproximada de ker(A) usando SVD.
+    Calcula una base ortonormal de ker(A) usando scipy.linalg.null_space.
     Devuelve R de tamaño (2n x d), cuyas columnas generan Roll(c).
+    
+    Args:
+        A: Matriz de contacto (m, 2n)
+        rtol: Tolerancia relativa para determinar el rango (rcond en null_space)
+    
+    Returns:
+        Base ortonormal del kernel de A
+    
+    Notes:
+        Usa scipy.linalg.null_space que internamente usa SVD pero garantiza
+        una base ortonormal consistente con el código de referencia.
     """
     if A.size == 0:
-        # No hay contactos: todo R^{2n} es ker(A)
-        # pero aquí necesitamos saber 2n; el llamador debe manejar este caso.
         raise ValueError("rolling_space_basis: matriz A vacía")
-
-    U, S, Vt = np.linalg.svd(A, full_matrices=True)
-    # valores singulares pequeños se consideran cero
-    if S.size == 0:
-        rank = 0
-    else:
-        tol = rtol * (S[0] if S.size > 0 else 1.0)
-        rank = int(np.sum(S > tol))
-    V = Vt.T
-    R = V[:, rank:]  # columnas asociadas a valores singulares ~0
+    
+    # Usar null_space de scipy (idéntico al código de referencia)
+    R = null_space(A, rcond=rtol)
+    
     return R
 
 
@@ -64,20 +68,46 @@ def compute_perimeter_gradient(config: Configuration) -> np.ndarray:
     Calcula el gradiente del perímetro de la envolvente convexa
     con respecto a las coordenadas de los centros.
     
+    Para cadenas colineales: ∇Per = 2 * ∇dist(inicio, fin)
+    Para hulls generales: ∇Per = suma de ∇dist(vértices consecutivos)
+    
     Returns:
         Array de forma (2n,) con el gradiente.
     """
-    from .perimeter import compute_hull
+    from .perimeter import compute_hull, is_collinear_chain, find_chain_endpoints
     
     n = config.n
     coords = config.coords
     hull = config.hull_vertices if config.hull_vertices is not None else compute_hull(config)
     
-    gradient = np.zeros(2 * n, dtype=float)
+    gradient = np.zeros(2 * n, dtype=np.float64)  # Usar float64 explícitamente
     
     if len(hull) <= 1:
         return gradient
     
+    # Detectar si es una cadena colineal
+    if is_collinear_chain(config, hull):
+        # Caso especial: cadena colineal
+        # Per = 2 * ||c_fin - c_inicio||
+        # ∇Per = 2 * [∂/∂c_i (||c_fin - c_inicio||)]
+        
+        i, j = find_chain_endpoints(config, hull)
+        
+        diff = coords[j] - coords[i]
+        dist = np.linalg.norm(diff)
+        
+        if dist > np.float64(1e-12):
+            # Vector unitario de i hacia j
+            u = diff / dist
+            
+            # Gradiente: ∂dist/∂c_i = -u, ∂dist/∂c_j = +u
+            # Multiplicar por 2 porque Per = 2 * dist
+            gradient[2*i:2*i+2] = np.float64(-2.0) * u
+            gradient[2*j:2*j+2] = np.float64(2.0) * u
+        
+        return gradient
+    
+    # Caso general: polígono convexo
     # Para cada arista del hull, contribuir al gradiente
     for k in range(len(hull)):
         i = hull[k]
@@ -86,7 +116,7 @@ def compute_perimeter_gradient(config: Configuration) -> np.ndarray:
         diff = coords[j] - coords[i]
         dist = np.linalg.norm(diff)
         
-        if dist > 1e-12:
+        if dist > np.float64(1e-12):
             # Tangente unitario en dirección i->j
             t = diff / dist
             
@@ -404,3 +434,39 @@ def compute_disk_hull_geometry(config: Configuration, radius: float = 1.0) -> Di
                 })
     
     return result
+
+
+def get_projector(config: Configuration, tol: float = 1e-12) -> np.ndarray:
+    """
+    Calcula el proyector ortogonal sobre el espacio tangente (kernel de A).
+    
+    P = I - A^T (A A^T)^{-1} A
+    
+    Se usa la pseudo-inversa para estabilidad numérica.
+    
+    Args:
+        config: Configuración de discos.
+        tol: Tolerancia para la pseudo-inversa.
+    
+    Returns:
+        Matriz proyector (2n, 2n).
+    
+    Notes:
+        P es idempotente (P^2 = P) y simétrico (P^T = P).
+        Proyecta vectores sobre ker(A), el rolling space.
+    """
+    n = config.n
+    dim = 2 * n
+    
+    # Caso sin contactos: proyector es la identidad
+    if len(config.edges) == 0:
+        return np.eye(dim, dtype=np.float64)
+    
+    # Construir matriz de contacto
+    A = build_contact_matrix(config)
+    
+    # Proyector: I - pinv(A) @ A
+    # Equivalente a: I - A^T (A A^T)^{-1} A
+    P = np.eye(dim, dtype=np.float64) - np.linalg.pinv(A, rcond=tol) @ A
+    
+    return P
